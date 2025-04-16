@@ -11,10 +11,10 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "search-prompt",
+      "name": "index",
       "title": "Search Prompt",
       "description": "",
-      "mode": "no-view"
+      "mode": "view"
     }
   ],
   "dependencies": {
