@@ -7,7 +7,7 @@
 | 用語 | 定義 | 備考 |
 |------|------|------|
 | Prompt | 実行可能なAIへの入力テンプレート。ユーザーが作成・共有する単位。| LocalStorageまたはDynamoDBに保存 |
-| PromptGroup | 複数のPromptをカテゴライズするためのラベル単位。| `タグ`と混同されないよう注意 |
+| PromptCategory | 複数のPromptをカテゴライズするためのラベル単位。| `タグ`と混同されないよう注意 |
 | PromptVariable | Prompt内に埋め込まれるカスタム変数。実行時に入力される。| `{{name}}` などの形で表現 |
 | LocalPrompt | ローカル環境に保存されるPrompt。| オフライン対応・即時性重視 |
 | OrgPrompt | DynamoDBで組織共有されるPrompt。| 組織フィルタ・権限制御あり |
@@ -17,7 +17,7 @@
 
 ### 2.1 `Prompt`
 - `id`: UUID or CUID
-- `title`: string
+- `keyword`: string
 - `body`: PromptBody
 - `tags`: PromptTags
 - `author`: UserMeta
@@ -46,9 +46,9 @@
 - 制約: 最大10個、重複不可、英数字(小文字)・アンダースコア・ハイフンのみ許容
 
 ### 3.3 `UserMeta`
+- id: string
 - name: string
-- department: string
-- role: string
+- org: string[]
 
 ### 3.4 `PromptVariable`
 - key: string

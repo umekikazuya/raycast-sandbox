@@ -1,13 +1,11 @@
 import { List, ActionPanel, Action, Icon, showToast, Toast, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { Prompt } from "./domain/models/prompt";
+import { Prompt } from "./domain/entities/prompt";
 import { LocalStoragePromptRepository } from "./infrastructure/repositories/local-storage-prompt-repository";
 import { PromptListItem } from "./components/prompt-list-item";
-import { PromptFilter } from "./domain/repositories/prompt-repository";
+import { PromptFilter } from "./domain/repositories/promptRepository";
 import { PromptDetail } from "./components/prompt-detail";
 import { PromptForm } from "./components/prompt-form";
-import { VariableValues } from "./usecases/execute-prompt";
-import { PromptApplicationServiceImpl } from "./application/services/prompt-application-service-impl";
 
 /**
  * プロンプト検索コマンド
@@ -73,12 +71,7 @@ export default function Command() {
   // 検索テキスト変更時
   function handleSearchTextChange(text: string) {
     setSearchText(text);
-    // 遅延実行（パフォーマンス向上のため）
-    const timeoutId = setTimeout(() => {
-      fetchPrompts();
-    }, 300);
-    
-    return () => clearTimeout(timeoutId);
+    fetchPrompts();
   }
 
   // プロンプト詳細画面へ遷移
@@ -118,6 +111,7 @@ export default function Command() {
   function handleCreatePrompt() {
     push(
       <PromptForm
+        initialValues={undefined}
         mode="create"
       />
     );
@@ -133,7 +127,7 @@ export default function Command() {
       actions={
         <ActionPanel>
           <Action
-            title="新規プロンプト作成"
+            title="Create New Prompt"
             icon={Icon.Plus}
             shortcut={{ modifiers: ["cmd"], key: "n" }}
             onAction={handleCreatePrompt}
@@ -153,13 +147,13 @@ export default function Command() {
       
       {prompts.length === 0 && !isLoading && (
         <List.EmptyView
-          title="プロンプトが見つかりません"
-          description="新しいプロンプトを作成するか、検索条件を変更してください。"
+          title="No Prompts Found"
+          description="No prompts match your search."
           icon={Icon.Text}
           actions={
             <ActionPanel>
               <Action
-                title="新規プロンプト作成"
+                title="Create New Prompt"
                 icon={Icon.Plus}
                 onAction={handleCreatePrompt}
               />
