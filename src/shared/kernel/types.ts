@@ -22,7 +22,7 @@ export type ApplicationErr =
   | { kind: "ExecutionError"; message: string; cause?: unknown }
   | { kind: "AdaptationError"; message: string; cause?: unknown };
 
-export type InfrastructureErr = 
+export type InfrastructureErr =
   | { kind: "StorageError"; message: string }
   | { kind: "NetworkError"; message: string }
   | { kind: "SerializationError"; message: string }

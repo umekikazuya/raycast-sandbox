@@ -8,20 +8,16 @@ describe("Prompt", () => {
       body: "本文",
       categoryId: "cat1",
       type: "local",
-      variables: [
-        { key: "var1", label: "変数1", required: true }
-      ]
+      variables: [{ key: "var1", label: "変数1", required: true }],
     });
     expect(result.tag).toBe("ok");
-    if (result.tag === 'ok') {
+    if (result.tag === "ok") {
       expect(result.val.id).toBe("id1");
       expect(result.val.keyword).toBe("keyword");
       expect(result.val.body).toBe("本文");
       expect(result.val.categoryId).toBe("cat1");
       expect(result.val.type).toBe("local");
-      expect(result.val.variables).toEqual([
-        { key: "var1", label: "変数1", required: true }
-      ]);
+      expect(result.val.variables).toEqual([{ key: "var1", label: "変数1", required: true }]);
     }
   });
   it("異常系: 空idはエラー", () => {
@@ -31,7 +27,7 @@ describe("Prompt", () => {
       body: "本文",
       categoryId: "cat1",
       type: "local",
-      variables: null
+      variables: null,
     });
     expect(result.tag).toBe("err");
     expect(result.err.kind).toBe("InvalidPromptId");
@@ -43,10 +39,12 @@ describe("Prompt", () => {
       body: "本文",
       categoryId: "cat1",
       type: "local",
-      variables: null
+      variables: null,
     });
     expect(result.tag).toBe("err");
-    expect(result.err.kind).toBe("InvalidPromptKeyword");
+    if (result.tag === "err") {
+      expect(result.err.kind).toBe("InvalidPromptKeyword");
+    }
   });
   it("異常系: 空bodyはエラー", () => {
     const result = createPrompt({
@@ -55,10 +53,12 @@ describe("Prompt", () => {
       body: "",
       categoryId: "cat1",
       type: "local",
-      variables: null
+      variables: null,
     });
     expect(result.tag).toBe("err");
-    expect(result.err.kind).toBe("InvalidPromptBody");
+    if (result.tag === "err") {
+      expect(result.err.kind).toBe("InvalidPromptBody");
+    }
   });
   it("異常系: 空categoryIdはエラー", () => {
     const result = createPrompt({
@@ -67,9 +67,11 @@ describe("Prompt", () => {
       body: "本文",
       categoryId: "",
       type: "local",
-      variables: null
+      variables: null,
     });
     expect(result.tag).toBe("err");
-    expect(result.err.kind).toBe("InvalidCategoryId");
+    if (result.tag === "err") {
+      expect(result.err.kind).toBe("InvalidCategoryId");
+    }
   });
 });

@@ -53,7 +53,7 @@ export const createPrompt = ({
   if (!categoryId || categoryId.trim().length === 0) {
     return err({ kind: "InvalidCategoryId", raw: categoryId });
   }
-  
+
   const variablesResult = createPromptVariable({ variables });
   if (variablesResult.tag === "err") {
     return variablesResult;

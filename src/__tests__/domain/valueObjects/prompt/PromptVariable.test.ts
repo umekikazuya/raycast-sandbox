@@ -16,10 +16,12 @@ describe("PromptVariableKey", () => {
 
 describe("PromptVariable", () => {
   it("正常系: 複数変数を配列で生成できる", () => {
-    const result = createPromptVariable({ variables: [
-      { key: "var1", label: "変数1", required: true },
-      { key: "var2", label: "変数2", required: false }
-    ] });
+    const result = createPromptVariable({
+      variables: [
+        { key: "var1", label: "変数1", required: true },
+        { key: "var2", label: "変数2", required: false },
+      ],
+    });
     expect(result.tag).toBe("ok");
     if (result.tag === "err") {
       throw new Error("Unexpected error");
@@ -34,8 +36,6 @@ describe("PromptVariable", () => {
     expect(result.val).toBeNull();
   });
   it("異常系: 不正なkeyは例外", () => {
-    expect(() => createPromptVariable({ variables: [
-      { key: "bad-key", label: "NG", required: true }
-    ] })).toThrow();
+    expect(() => createPromptVariable({ variables: [{ key: "bad-key", label: "NG", required: true }] })).toThrow();
   });
 });

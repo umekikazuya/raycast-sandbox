@@ -22,13 +22,13 @@ export const createCategory = ({ id, name }: CreateCategoryArgs): Result<Categor
   }
 
   const trimmedName = name.trim().toLowerCase();
-  
+
   if (!CATEGORY_NAME_REGEX.test(trimmedName)) {
     return err({ kind: "InvalidCategoryName", raw: name });
   }
 
   return ok({
     id: id as CategoryId,
-    name: trimmedName
+    name: trimmedName,
   });
 };

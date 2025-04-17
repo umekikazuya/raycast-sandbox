@@ -1,6 +1,6 @@
 import { Result } from "../../shared/kernel/result";
 
-export type ClipboardServiceErr = 
+export type ClipboardServiceErr =
   | { kind: "ClipboardAccessDenied"; message: string }
   | { kind: "ClipboardWriteFailed"; message: string };
 

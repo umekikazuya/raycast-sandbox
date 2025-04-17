@@ -14,10 +14,10 @@ interface CreateOrganizationArgs {
   description?: string;
 }
 
-export const createOrganization = ({ 
-  id, 
-  name, 
-  description 
+export const createOrganization = ({
+  id,
+  name,
+  description,
 }: CreateOrganizationArgs): Result<Organization, ValidationErr> => {
   if (!id || id.trim().length === 0) {
     return err({ kind: "InvalidOrgId", raw: id });
@@ -30,6 +30,6 @@ export const createOrganization = ({
   return ok({
     id: id as OrgId,
     name: name.trim(),
-    description: description?.trim()
+    description: description?.trim(),
   });
 };
