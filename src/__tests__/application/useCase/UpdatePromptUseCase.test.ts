@@ -8,7 +8,12 @@ describe("updatePromptUseCase", () => {
 
   it("正常系: 既存プロンプトが存在し更新成功", async () => {
     const useCase = updatePromptUseCase({ promptRepository: mockRepo });
-    const result = await useCase({ id: "id1" as any, params: { keyword: "new" } });
+    // createPromptIdを使用して正しい型を生成
+    const idResult = createPromptId({ raw: "id1" });
+    if (idResult.tag !== "ok") {
+      throw new Error("Test setup failed");
+    }
+    const result = await useCase({ id: idResult.val, params: { keyword: "new" } });
     expect(result.tag).toBe("ok");
     expect(result.val.keyword).toBe("new");
   });
