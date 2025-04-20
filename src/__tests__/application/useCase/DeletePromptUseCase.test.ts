@@ -1,10 +1,15 @@
 import { deletePromptUseCase } from "../../../application/useCase/DeletePromptUseCase";
 
 describe("deletePromptUseCase", () => {
-  const mockRepo = {
-    findById: jest.fn(async ({ id }) => ({ tag: "ok", val: { id } })),
-    delete: jest.fn(async ({ id }) => ({ tag: "ok", val: undefined })),
-  } as any;
+import { PromptRepository } from "../../../domain/repositories/promptRepository";
+import { Result } from "../../../shared/kernel/result";
+
+const mockRepo: PromptRepository = {
+  findById: jest.fn(async ({ id }) => ({ tag: "ok", val: { id } })),
+  delete:   jest.fn(async ({ id }) => ({ tag: "ok", val: undefined })),
+  findAll:  jest.fn(),
+  save:     jest.fn(),
+};
 
   it("正常系: 既存プロンプトが存在し削除成功", async () => {
     const useCase = deletePromptUseCase({ promptRepository: mockRepo });
