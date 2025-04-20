@@ -1,9 +1,15 @@
 import { getAllPromptsUseCase } from "../../../application/useCase/GetAllPromptsUseCase";
 
 describe("getAllPromptsUseCase", () => {
-  const mockRepo = {
-    findAll: jest.fn(async () => ({ tag: "ok", val: [{ id: "id1" }] })),
-  } as any;
+import { PromptRepository } from "../../../domain/repositories/promptRepository";
+import { Result } from "../../../shared/kernel/result";
+
+const mockRepo: PromptRepository = {
+  findAll: jest.fn(async () => ({ tag: "ok", val: [{ id: "id1" }] })),
+  findById: jest.fn(),
+  save: jest.fn(),
+  delete: jest.fn(),
+};
 
   it("正常系: 全件取得成功", async () => {
     const useCase = getAllPromptsUseCase({ promptRepository: mockRepo });
