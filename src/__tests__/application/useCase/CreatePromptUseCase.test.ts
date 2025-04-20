@@ -1,4 +1,4 @@
-import { createPromptUseCase } from "../CreatePromptUseCase";
+import { createPromptUseCase } from "../../../application/useCase/CreatePromptUseCase";
 
 describe("createPromptUseCase", () => {
   const mockRepo = {
