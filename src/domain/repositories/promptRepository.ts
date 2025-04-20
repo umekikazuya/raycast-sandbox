@@ -4,6 +4,7 @@ import { Result } from "../../shared/kernel/result";
 import { CategoryId } from "../entities/category";
 import { Author } from "../valueObjects/prompt/Author";
 import { InfrastructureErr, ValidationErr } from "../../shared/kernel/types";
+import { PromptVariable } from "../valueObjects/prompt/PromptVariable";
 
 /**
  * プロンプトリポジトリエラー型
@@ -32,7 +33,7 @@ export type UpdatePromptParams = Readonly<{
   keyword?: string;
   body?: string;
   categoryId?: CategoryId;
-  variables?: readonly unknown[];
+  variables?: readonly PromptVariable[];
 }>;
 
 /**

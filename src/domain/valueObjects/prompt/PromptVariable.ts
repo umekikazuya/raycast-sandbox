@@ -40,11 +40,18 @@ export const createPromptVariable = ({
   const promptVariables = variables.map((variable) => {
     return createPromptVariableObject(variable);
   });
-
-  return ok(promptVariables);
+  const errors = promptVariables.filter((result) => result.tag === "err");
+  if (errors.length > 0) {
+    return err({ kind: "InvalidVariableLabel", raw: errors[0].tag });
+  }
+  return ok(
+    promptVariables
+      .map((result) => (result.tag === "ok" ? result.val : null))
+      .filter((val) => val !== null) as PromptVariable[],
+  );
 };
 
-const createPromptVariableObject = (variable: unknown): PromptVariable => {
+const createPromptVariableObject = (variable: unknown): Result<PromptVariable, ValidationErr> => {
   if (typeof variable === "object" && variable !== null) {
     const { key, label, required, placeholder } = variable as {
       key: string;
@@ -54,14 +61,14 @@ const createPromptVariableObject = (variable: unknown): PromptVariable => {
     };
     const keyResult = createPromptVariableKey({ raw: key });
     if (keyResult.tag === "err") {
-      throw new Error("Invalid variable key format");
+      return err({ kind: "InvalidVariableKeyFormat", raw: key });
     }
-    return {
+    return ok({
       key: keyResult.val,
-      label,
-      required,
-      placeholder,
-    };
+      label: label || "",
+      required: required || false,
+      placeholder: placeholder || "",
+    });
   }
-  throw new Error("Invalid variable format");
+  return err({ kind: "InvalidVariableLabel", raw: "Variables Error" });
 };
