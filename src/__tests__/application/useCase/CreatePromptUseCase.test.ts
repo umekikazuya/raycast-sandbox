@@ -34,4 +34,24 @@ describe("createPromptUseCase", () => {
     expect(result.tag).toBe("err");
     expect(result.err.kind).toBe("ValidationError");
   });
+
+  it("異常系: リポジトリエラー時はerrを返す", async () => {
+    const errorMockRepo = {
+      save: jest.fn(async () => ({ tag: "err", err: { kind: "DatabaseError" } })),
+    } as PromptRepository;
+
+    const useCase = createPromptUseCase({ promptRepository: errorMockRepo });
+    const params = {
+      keyword: "test-keyword",
+      body: "test body",
+      categoryId: "cat1",
+      variables: null,
+      type: "local",
+      author: "user1",
+    };
+
+    const result = await useCase({ params });
+    expect(result.tag).toBe("err");
+    expect(result.err.kind).toBe("RepositoryError");
+  });
 });
