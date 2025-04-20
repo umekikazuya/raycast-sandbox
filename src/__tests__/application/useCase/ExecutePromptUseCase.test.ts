@@ -17,7 +17,9 @@ describe("executePromptUseCase", () => {
     const useCase = executePromptUseCase({ promptRepository: mockRepo, clipboardService: mockClipboard });
     const result = await useCase({ params: { id: "id1" as any, variables: { name: "Taro" } } });
     expect(result.tag).toBe("ok");
-    expect(result.val.content).toBe("Hello, Taro!");
+    if (result.tag == "ok") {
+      expect(result.val.content).toBe("Hello, Taro!");
+    }
   });
   it("異常系: findByIdがerrの場合はRepositoryError", async () => {
     const repo = { ...mockRepo, findById: jest.fn(async () => ({ tag: "err", err: { kind: "x" } })) };
@@ -35,12 +37,14 @@ describe("executePromptUseCase", () => {
   });
   it("異常系: 変数未入力時はValidationError", async () => {
     const useCase = executePromptUseCase({ promptRepository: mockRepo, clipboardService: mockClipboard });
-    const result = await useCase({ params: { id: "id1" as any, variables: { val: [] } as any } });
+    const result = await useCase({ params: { id: "id1" as any, variables: { name: "" } } });
     expect(result.tag).toBe("err");
     expect(result.err.kind).toBe("ValidationError");
   });
   it("異常系: クリップボード失敗時はExecutionError", async () => {
-    const clipboard = { copyToClipboard: jest.fn(async () => ({ tag: "err", err: { kind: "ClipboardWriteFailed", message: "fail" } })) };
+    const clipboard = {
+      copyToClipboard: jest.fn(async () => ({ tag: "err", err: { kind: "ClipboardWriteFailed", message: "fail" } })),
+    };
     const useCase = executePromptUseCase({ promptRepository: mockRepo, clipboardService: clipboard });
     const result = await useCase({ params: { id: "id1" as any, variables: { name: "Taro" } } });
     expect(result.tag).toBe("err");
