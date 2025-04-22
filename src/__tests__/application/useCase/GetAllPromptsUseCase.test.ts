@@ -3,12 +3,14 @@ import { PromptRepository, PromptRepositoryErr } from "../../../domain/repositor
 
 describe("getAllPromptsUseCase", () => {
   const mockRepo: PromptRepository = {
-    findAll: jest.fn(),
-    findById: jest.fn(),
-    update: jest.fn(),
+-   findAll: jest.fn(),
++   findAll: jest.fn().mockReturnValueOnce({ tag: "ok",  val: [{ id: "id1" }] })
++                      .mockReturnValueOnce({ tag: "err", err: { kind: "RepositoryError" } }),
+    findById:    jest.fn(),
+    update:      jest.fn(),
     findByFilter: jest.fn(),
-    save: jest.fn(),
-    delete: jest.fn(),
+    save:        jest.fn(),
+    delete:      jest.fn(),
   };
 
   it("正常系: 全件取得成功", async () => {
