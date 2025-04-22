@@ -1,41 +1,47 @@
 import { deletePromptUseCase } from "../../../application/useCase/DeletePromptUseCase";
-
-import { deletePromptUseCase } from "../../../application/useCase/DeletePromptUseCase";
 import { PromptRepository } from "../../../domain/repositories/promptRepository";
-import { Result } from "../../../shared/kernel/result";
+import { createTestPromptId } from "../../testUtils"; // テストヘルパー関数をインポート
 
 describe("deletePromptUseCase", () => {
-  // …rest of your tests…
-const mockRepo: PromptRepository = {
-  findById: jest.fn(async ({ id }) => ({ tag: "ok", val: { id } })),
-  delete:   jest.fn(async ({ id }) => ({ tag: "ok", val: undefined })),
-  findAll:  jest.fn(),
-  save:     jest.fn(),
-};
+  let mockRepo: PromptRepository;
+  let useCase: ReturnType<typeof deletePromptUseCase>;
+  let testId: ReturnType<typeof createTestPromptId>;
 
-  it("正常系: 既存プロンプトが存在し削除成功", async () => {
-    const useCase = deletePromptUseCase({ promptRepository: mockRepo });
-    const result = await useCase({ id: "id1" as any });
+  beforeEach(() => {
+    mockRepo = {
+      findById: jest.fn(async ({ id }) => ({ tag: "ok", val: { id } })),
+      delete: jest.fn(async ({ id }) => ({ tag: "ok", val: undefined })),
+      findAll: jest.fn(),
+      findByFilter: jest.fn(),
+      save: jest.fn(),
+      update: jest.fn(),
+    };
+    useCase = deletePromptUseCase({ promptRepository: mockRepo });
+    testId = createTestPromptId("id1");
+  });
+
+  it("正常系: 既存プロンプトが存在し削除に成功する", async () => {
+    const result = await useCase({ id: testId });
     expect(result.tag).toBe("ok");
   });
-  it("異常系: findByIdがerrの場合はRepositoryError", async () => {
-    const repo = { ...mockRepo, findById: jest.fn(async () => ({ tag: "err", err: { kind: "x" } })) };
-    const useCase = deletePromptUseCase({ promptRepository: repo });
-    const result = await useCase({ id: "id1" as any });
+
+  it("異常系: findByIdがエラーを返す場合はRepositoryErrorを返す", async () => {
+    mockRepo.findById = jest.fn(async () => ({ tag: "err", err: { kind: "x" } }));
+    const result = await useCase({ id: testId });
     expect(result.tag).toBe("err");
     expect(result.err.kind).toBe("RepositoryError");
   });
-  it("異常系: プロンプトが存在しない場合はNotFoundError", async () => {
-    const repo = { ...mockRepo, findById: jest.fn(async () => ({ tag: "ok", val: null })) };
-    const useCase = deletePromptUseCase({ promptRepository: repo });
-    const result = await useCase({ id: "id1" as any });
+
+  it("異常系: プロンプトが存在しない場合はNotFoundErrorを返す", async () => {
+    mockRepo.findById = jest.fn(async () => ({ tag: "ok", val: null }));
+    const result = await useCase({ id: testId });
     expect(result.tag).toBe("err");
     expect(result.err.kind).toBe("NotFoundError");
   });
-  it("異常系: deleteがerrの場合はRepositoryError", async () => {
-    const repo = { ...mockRepo, delete: jest.fn(async () => ({ tag: "err", err: { kind: "x" } })) };
-    const useCase = deletePromptUseCase({ promptRepository: repo });
-    const result = await useCase({ id: "id1" as any });
+
+  it("異常系: deleteがエラーを返す場合はRepositoryErrorを返す", async () => {
+    mockRepo.delete = jest.fn(async () => ({ tag: "err", err: { kind: "x" } }));
+    const result = await useCase({ id: testId });
     expect(result.tag).toBe("err");
     expect(result.err.kind).toBe("RepositoryError");
   });
