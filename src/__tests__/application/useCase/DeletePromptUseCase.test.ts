@@ -1,9 +1,11 @@
 import { deletePromptUseCase } from "../../../application/useCase/DeletePromptUseCase";
 
-describe("deletePromptUseCase", () => {
+import { deletePromptUseCase } from "../../../application/useCase/DeletePromptUseCase";
 import { PromptRepository } from "../../../domain/repositories/promptRepository";
 import { Result } from "../../../shared/kernel/result";
 
+describe("deletePromptUseCase", () => {
+  // …rest of your tests…
 const mockRepo: PromptRepository = {
   findById: jest.fn(async ({ id }) => ({ tag: "ok", val: { id } })),
   delete:   jest.fn(async ({ id }) => ({ tag: "ok", val: undefined })),
