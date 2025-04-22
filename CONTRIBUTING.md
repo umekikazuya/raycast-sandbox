@@ -1,5 +1,5 @@
 # Coding Practices Meta Prompt – Raycast Prompt Manager  
-_React × TypeScript • FP • DDD • SOLID • Immutable‑First_
+## _React × TypeScript • FP • DDD • SOLID • Immutable‑First_
 
 ## 0. Scope & Goals
 - **Audience**  Front‑end & full‑stack engineers working on the Raycast Prompt Manager.  

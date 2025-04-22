@@ -67,7 +67,7 @@ export const createPrompt = ({
     body: bodyResult.val,
     categoryId: categoryId as CategoryId,
     type: type,
-    variables: variablesResult.val ?? null,
+    variables: variablesResult.val,
     createdAt: now,
     updatedAt: now,
   });
