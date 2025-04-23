@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Form, ActionPanel, Action, showToast, Toast, useNavigation } from "@raycast/api";
-import { CreatePromptParams, UpdatePromptParams } from "../domain/models/prompt";
-import { PromptVariable, createPromptVariable } from "../domain/models/prompt-variable";
+import { Prompt } from "../domain/entities/prompt";
+import { PromptVariable, createPromptVariable } from "../domain/valueObjects/prompt/PromptVariable";
 import { LocalStoragePromptRepository } from "../infrastructure/repositories/local-storage-prompt-repository";
-import { createCreatePromptUseCase, createUpdatePromptUseCase } from "../usecases/manage-prompts";
+import { createPromptUseCase, CreatePromptParams } from "../application/useCase/CreatePromptUseCase";
+import { updatePromptUseCase } from "../application/useCase/UpdatePromptUseCase";
+import { UpdatePromptParams } from "../domain/repositories/promptRepository";
 
 type PromptFormProps = {
   initialValues?: {
@@ -38,8 +40,8 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
 
   // リポジトリとユースケースの初期化
   const repository = new LocalStoragePromptRepository();
-  const createPrompt = createCreatePromptUseCase(repository);
-  const updatePrompt = createUpdatePromptUseCase(repository);
+  const createPrompt = createPromptUseCase({ promptRepository: repository });
+  const updatePrompt = updatePromptUseCase({ promptRepository: repository });
 
   // 変数の追加
   function handleAddVariable() {
@@ -118,9 +120,9 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
           position,
         };
 
-        const result = await createPrompt(params);
+        const result = await createPrompt({ params });
 
-        if (result.ok) {
+        if (result.tag === "ok") {
           showToast({
             style: Toast.Style.Success,
             title: "プロンプトを作成しました",
@@ -130,7 +132,7 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
           showToast({
             style: Toast.Style.Failure,
             title: "作成に失敗しました",
-            message: result.error,
+            message: result.err.message || String(result.err),
           });
         }
       } else if (mode === "edit" && initialValues?.id) {
@@ -145,9 +147,9 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
           position,
         };
 
-        const result = await updatePrompt(initialValues.id as any, params);
+        const result = await updatePrompt({ id: initialValues.id, params });
 
-        if (result.ok) {
+        if (result.tag === "ok") {
           showToast({
             style: Toast.Style.Success,
             title: "プロンプトを更新しました",
@@ -157,7 +159,7 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
           showToast({
             style: Toast.Style.Failure,
             title: "更新に失敗しました",
-            message: result.error,
+            message: result.err.message || String(result.err),
           });
         }
       }

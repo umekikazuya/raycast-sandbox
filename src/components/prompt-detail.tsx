@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Detail, ActionPanel, Action, Icon, showToast, Toast, useNavigation } from "@raycast/api";
-import { Prompt } from "../domain/models/prompt";
-import { PromptError } from "../domain/models/types";
+import { Prompt } from "../domain/entities/prompt";
+import { PromptError } from "../shared/kernel/types";
 import { PromptVariableForm } from "./prompt-variable-form";
-import { ExecutePromptResult, VariableValues, createExecutePromptUseCase } from "../usecases/execute-prompt";
+import { ExecutePromptResult, VariableValues, executePromptUseCase } from "../application/useCase/ExecutePromptUseCase";
 import { LocalStoragePromptRepository } from "../infrastructure/repositories/local-storage-prompt-repository";
-import { createGetPromptDetailsUseCase } from "../usecases/search-prompts";
+import { getPromptByIdUseCase } from "../application/useCase/GetPromptByIdUseCase";
 
 type PromptDetailProps = {
   promptId: string;
@@ -22,9 +22,13 @@ export function PromptDetail({ promptId }: PromptDetailProps) {
 
   // リポジトリとユースケースの初期化
   const repository = new LocalStoragePromptRepository();
-  const getPromptDetails = createGetPromptDetailsUseCase(repository);
-  const executePrompt = createExecutePromptUseCase(repository);
-
+  const getPromptDetails = getPromptByIdUseCase({ promptRepository: repository });
+  const executePrompt = executePromptUseCase({ 
+    promptRepository: repository, 
+    clipboardService: { 
+      copyToClipboard: async ({ text }) => ({ tag: "ok", val: true }) 
+    } 
+  });
   // 初期ロード
   useEffect(() => {
     fetchPromptDetails();
@@ -35,7 +39,7 @@ export function PromptDetail({ promptId }: PromptDetailProps) {
     setIsLoading(true);
 
     try {
-      const result = await getPromptDetails(promptId);
+      const result = await getPromptDetails({ id: promptId });
 
       if (result.ok) {
         setPrompt(result.value);
@@ -74,7 +78,7 @@ export function PromptDetail({ promptId }: PromptDetailProps) {
   // 変数入力後のプロンプト実行
   async function executeWithVariables(promptId: string, values: VariableValues) {
     try {
-      const result = await executePrompt(promptId as any, values);
+      const result = await executePrompt({ params: { id: promptId, variables: values } });
 
       if (result.ok) {
         setExecutedContent(result.value.content);
