@@ -29,7 +29,7 @@ export type PromptFilter = {
 export type UpdatePromptParams = Readonly<{
   keyword?: string;
   body?: string;
-  category?: PromptCategory;
+  category?: string;
 }>;
 
 /**

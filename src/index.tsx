@@ -2,14 +2,14 @@ import { List, ActionPanel, Action, Icon, showToast, Toast, useNavigation } from
 import { useEffect, useState } from "react";
 import { Prompt } from "./domain/entities/prompt";
 import { LocalStoragePromptRepository } from "./infrastructure/repositories/localStoragePromptRepository";
-import { PromptListItem } from "./components/prompt-list-item";
+import { PromptListItem } from "./components/promptListItem";
 import { PromptFilter } from "./domain/repositories/promptRepository";
-import { PromptDetail } from "./components/prompt-detail";
-import { PromptForm } from "./components/prompt-form";
+import { PromptForm } from "./components/promptForm";
+import { filterPromptsUseCase } from "./application/useCase/FilterPromptsUseCase";
 
 /**
  * プロンプト検索コマンド
- * アプリケーションサービスを利用して、UIと業務ロジックを分離
+ * アプリケーションサービスを利用して、UIと業務ロジックを分離f
  */
 export default function Command() {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,7 +20,6 @@ export default function Command() {
 
   // リポジトリとアプリケーションサービスの初期化
   const repository = new LocalStoragePromptRepository();
-  const promptService = new PromptApplicationServiceImpl(repository);
 
   // 初期ロード
   useEffect(() => {
@@ -35,26 +34,27 @@ export default function Command() {
   // 検索処理
   async function fetchPrompts() {
     setIsLoading(true);
+    
+    const filterUseCase = filterPromptsUseCase({promptRepository: repository});
 
     try {
-      // サンプルデータの初期化（初回のみ）
-      await promptService.initializeSampleData();
-
       // 検索テキストをキーワードに設定
       const currentFilter: PromptFilter = {
         ...filter,
         keywords: searchText || undefined,
       };
 
-      const result = await promptService.searchPrompts(currentFilter);
-
-      if (result.ok) {
-        setPrompts(result.value);
+      const result = await filterUseCase({filter: currentFilter});
+    
+      if (result.tag === "ok") {
+        if (result.val) {
+          setPrompts(result.val);
+        }
       } else {
         showToast({
           style: Toast.Style.Failure,
           title: "検索エラー",
-          message: result.error,
+          message: result.err.kind,
         });
       }
     } catch (error) {
@@ -74,13 +74,9 @@ export default function Command() {
     fetchPrompts();
   }
 
-  // プロンプト詳細画面へ遷移
-  function handleShowDetail(promptId: string) {
-    push(<PromptDetail promptId={promptId} />);
-  }
-
   // プロンプト実行
-  async function handleExecutePrompt(promptId: string, variables: VariableValues = {}) {
+  async function handleExecutePrompt(promptId: string) {
+    // const filterUseCase = filterPromptsUseCase({promptRepository: repository});
     try {
       const result = await promptService.executePrompt(promptId as any, variables);
 
@@ -111,6 +107,10 @@ export default function Command() {
   function handleCreatePrompt() {
     push(<PromptForm initialValues={undefined} mode="create" />);
   }
+  
+  function handleExecuteEditPrompt(prompt: Prompt) {
+    push(<PromptForm initialValues={prompt} mode="edit" />);
+  }
 
   return (
     <List
@@ -132,7 +132,11 @@ export default function Command() {
     >
       <List.Section title="プロンプト一覧" subtitle={`${prompts.length}件`}>
         {prompts.map((prompt) => (
-          <PromptListItem key={prompt.id} prompt={prompt} onExecute={handleExecutePrompt} />
+          <PromptListItem
+            key={prompt.id}
+            prompt={prompt}
+            onExecuteEdit={() => handleExecuteEditPrompt(prompt)}
+          />
         ))}
       </List.Section>
 
