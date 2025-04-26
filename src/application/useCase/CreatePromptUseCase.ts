@@ -4,11 +4,12 @@ import { PromptRepository, PromptRepositoryErr } from "../../domain/repositories
 import { PromptType } from "../../shared/kernel/PromptType";
 import { Result, ok, err } from "../../shared/kernel/result";
 import { ApplicationErr } from "../../shared/kernel/types";
+import { PromptCategory } from "../../domain/valueObjects/prompt/PromptCategory";
 
 export type CreatePromptParams = Readonly<{
   keyword: string;
   body: string;
-  category: string;
+  category: PromptCategory;
   type: PromptType;
 }>;
 

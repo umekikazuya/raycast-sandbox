@@ -2,7 +2,6 @@ import {
   PromptRepository,
   PromptRepositoryErr,
   PromptFilter,
-  UpdatePromptParams,
 } from "../../domain/repositories/promptRepository";
 import { Prompt } from "../../domain/entities/prompt";
 import { PromptId } from "../../domain/valueObjects/prompt/PromptId";
@@ -46,7 +45,7 @@ export class LocalStoragePromptRepository implements PromptRepository {
       filtered = filtered.filter((p) => p.keyword.includes(filter.keywords!) || p.body.includes(filter.keywords!));
     }
     if (filter.category) {
-      filtered = filtered.filter((p) => p.category === filter.c);
+      filtered = filtered.filter((p) => p.category === filter.category);
     }
     return ok(filtered);
   }
@@ -70,22 +69,18 @@ export class LocalStoragePromptRepository implements PromptRepository {
   }
 
   async update({
-    id,
-    params,
+    prompt
   }: {
-    readonly id: PromptId;
-    readonly params: UpdatePromptParams;
+    readonly prompt: Prompt;
   }): Promise<Result<Prompt, PromptRepositoryErr>> {
     const all = await this.findAll();
     if (all.tag === "err") return all;
-    const idx = all.val.findIndex((p) => p.id === id);
-    if (idx === -1) return err({ kind: "PromptNotFound", id });
+    const idx = all.val.findIndex((p) => p.id === prompt.id);
+    if (idx === -1) return err({ kind: "PromptNotFound", id: prompt.id });
     const old = all.val[idx];
     const updated: Prompt = {
       ...old,
-      ...(params.keyword !== undefined ? { title: params.keyword } : {}),
-      ...(params.body !== undefined ? { body: params.body } : {}),
-      ...(params.categoryId !== undefined ? { categoryId: params.categoryId } : {}),
+      ...prompt,
       updatedAt: new Date(),
     };
     const newPrompts = [...all.val];

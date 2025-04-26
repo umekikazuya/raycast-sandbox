@@ -5,6 +5,7 @@ import { createPromptUseCase, CreatePromptParams } from "../application/useCase/
 import { updatePromptUseCase } from "../application/useCase/UpdatePromptUseCase";
 import { UpdatePromptParams } from "../domain/repositories/promptRepository";
 import { Prompt } from "../domain/entities/prompt";
+import { createPromptCategory } from "../domain/valueObjects/prompt/PromptCategory";
 
 type PromptFormProps = {
   initialValues: Prompt | null;
@@ -44,7 +45,8 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
       return;
     }
 
-    if (!category.trim()) {
+    const categoryResult = createPromptCategory({ raw: category });
+    if (categoryResult.tag !== "ok") {
       showToast({
         style: Toast.Style.Failure,
         title: "カテゴリを入力してください",
@@ -58,7 +60,7 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
         const params: CreatePromptParams = {
           keyword,
           body,
-          category,
+          category: categoryResult.val,
           type: "local",
         };
 
@@ -82,7 +84,7 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
         const params: UpdatePromptParams = {
           keyword,
           body,
-          category,
+          category: categoryResult.val,
         };
 
         const result = await updatePrompt({ id: initialValues.id, params });
@@ -121,13 +123,7 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
         </ActionPanel>
       }
     >
-      <Form.TextArea
-        id="body"
-        title="プロンプト"
-        placeholder="プロンプトを入力"
-        value={body}
-        onChange={setBody}
-      />
+      <Form.TextArea id="body" title="プロンプト" placeholder="プロンプトを入力" value={body} onChange={setBody} />
 
       <Form.TextField
         id="keyword"
@@ -136,10 +132,16 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
         value={keyword}
         onChange={setKeyword}
       />
-      
+
       <Form.Separator />
 
-      <Form.Dropdown id="category" title="カテゴリ" defaultValue="development" placeholder="カテゴリを選択" onChange={setCategory}>
+      <Form.Dropdown
+        id="category"
+        title="カテゴリ"
+        defaultValue="development"
+        placeholder="カテゴリを選択"
+        onChange={setCategory}
+      >
         <Form.Dropdown.Item value="writing" title="Writing" icon="📝" />
         <Form.Dropdown.Item value="development" title="Development" icon="🛠️" />
         <Form.Dropdown.Item value="learning" title="Learning" icon="🏫" />

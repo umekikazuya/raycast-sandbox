@@ -1,5 +1,4 @@
 import { Prompt } from "../../domain/entities/prompt";
-import { PromptId } from "../../domain/valueObjects/prompt/PromptId";
 import { PromptRepository, PromptRepositoryErr, UpdatePromptParams } from "../../domain/repositories/promptRepository";
 import { Result, ok, err } from "../../shared/kernel/result";
 import { ApplicationErr } from "../../shared/kernel/types";
@@ -11,20 +10,14 @@ export type UpdatePromptErr = ApplicationErr | PromptRepositoryErr;
  */
 export const updatePromptUseCase =
   ({ promptRepository }: { readonly promptRepository: PromptRepository }) =>
-  async ({
-    id,
-    params,
-  }: {
-    readonly id: PromptId;
-    readonly params: UpdatePromptParams;
-  }): Promise<Result<Prompt, UpdatePromptErr>> => {
+  async ({ prompt }: { readonly prompt: Prompt }): Promise<Result<Prompt, UpdatePromptErr>> => {
     // 対象プロンプトの存在確認
-    const existingPromptResult = await promptRepository.findById({ id });
+    const existingPromptResult = await promptRepository.findById({ id: prompt.id });
 
     if (existingPromptResult.tag === "err") {
       return err({
         kind: "RepositoryError",
-        message: `ID ${id} のプロンプト取得に失敗しました`,
+        message: `ID ${prompt.id} のプロンプト取得に失敗しました`,
         cause: existingPromptResult.err,
       });
     }
@@ -32,12 +25,12 @@ export const updatePromptUseCase =
     if (!existingPromptResult.val) {
       return err({
         kind: "NotFoundError",
-        message: `ID ${id} のプロンプトが見つかりません`,
+        message: `ID ${prompt.id} のプロンプトが見つかりません`,
       });
     }
 
     // プロンプトの更新
-    const updateResult = await promptRepository.update({ id, params });
+    const updateResult = await promptRepository.update({ prompt: prompt });
 
     if (updateResult.tag === "err") {
       return err({

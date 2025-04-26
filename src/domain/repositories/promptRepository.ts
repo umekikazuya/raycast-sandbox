@@ -72,11 +72,9 @@ export interface PromptRepository {
    * 部分的な更新をサポート
    */
   update({
-    id,
-    params,
+    prompt,
   }: {
-    readonly id: PromptId;
-    readonly params: UpdatePromptParams;
+    readonly prompt: Prompt;
   }): Promise<Result<Prompt, PromptRepositoryErr>>;
 
   /**
