@@ -1,10 +1,8 @@
 import { Prompt } from "../entities/prompt";
 import { PromptId } from "../valueObjects/prompt/PromptId";
 import { Result } from "../../shared/kernel/result";
-import { CategoryId } from "../entities/category";
-import { Author } from "../valueObjects/prompt/Author";
 import { InfrastructureErr, ValidationErr } from "../../shared/kernel/types";
-import { PromptVariable } from "../valueObjects/prompt/PromptVariable";
+import { PromptCategory } from "../valueObjects/prompt/PromptCategory";
 
 /**
  * プロンプトリポジトリエラー型
@@ -21,9 +19,8 @@ export type PromptRepositoryErr =
  */
 export type PromptFilter = {
   readonly keywords?: string;
-  readonly categoryId?: CategoryId;
+  readonly category?: PromptCategory;
   readonly tags?: readonly string[];
-  readonly author?: Author;
 };
 
 /**
@@ -32,8 +29,7 @@ export type PromptFilter = {
 export type UpdatePromptParams = Readonly<{
   keyword?: string;
   body?: string;
-  categoryId?: CategoryId;
-  variables?: readonly PromptVariable[];
+  category?: string;
 }>;
 
 /**
@@ -76,11 +72,9 @@ export interface PromptRepository {
    * 部分的な更新をサポート
    */
   update({
-    id,
-    params,
+    prompt,
   }: {
-    readonly id: PromptId;
-    readonly params: UpdatePromptParams;
+    readonly prompt: Prompt;
   }): Promise<Result<Prompt, PromptRepositoryErr>>;
 
   /**

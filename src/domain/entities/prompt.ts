@@ -1,19 +1,17 @@
-import { Result, ok, err } from "../../shared/kernel/result";
+import { Result, ok } from "../../shared/kernel/result";
 import { ValidationErr } from "../../shared/kernel/types";
 import { PromptBody, createPromptBody } from "../valueObjects/prompt/PromptBody";
-import { createPromptVariable, PromptVariable } from "../valueObjects/prompt/PromptVariable";
-import { CategoryId } from "./category";
 import { PromptType } from "../../shared/kernel/PromptType";
 import { createPromptKeyword, PromptKeyword } from "../valueObjects/prompt/PromptKeyword";
 import { createPromptId, PromptId } from "../valueObjects/prompt/PromptId";
+import { createPromptCategory, PromptCategory } from "../valueObjects/prompt/PromptCategory";
 
 export interface Prompt {
   id: PromptId;
   keyword: PromptKeyword;
   body: PromptBody;
-  categoryId: CategoryId;
+  category: PromptCategory;
   type: PromptType;
-  variables: PromptVariable[] | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,18 +20,16 @@ interface CreatePromptArgs {
   id: string;
   keyword: string;
   body: string;
-  categoryId: string;
+  category: string;
   type: PromptType;
-  variables: unknown[] | null;
 }
 
 export const createPrompt = ({
   id,
   keyword,
   body,
-  categoryId,
+  category,
   type,
-  variables,
 }: CreatePromptArgs): Result<Prompt, ValidationErr> => {
   const idResult = createPromptId({ raw: id });
   if (idResult.tag === "err") {
@@ -49,14 +45,10 @@ export const createPrompt = ({
   if (bodyResult.tag === "err") {
     return bodyResult;
   }
-
-  if (!categoryId || categoryId.trim().length === 0) {
-    return err({ kind: "InvalidCategoryId", raw: categoryId });
-  }
-
-  const variablesResult = createPromptVariable({ variables });
-  if (variablesResult.tag === "err") {
-    return variablesResult;
+  
+  const categoryResult = createPromptCategory({ raw: category });
+  if (categoryResult.tag === "err") {
+    return categoryResult;
   }
 
   const now = new Date();
@@ -65,9 +57,8 @@ export const createPrompt = ({
     id: idResult.val,
     keyword: keywordResult.val,
     body: bodyResult.val,
-    categoryId: categoryId as CategoryId,
+    category: categoryResult.val,
     type: type,
-    variables: variablesResult.val,
     createdAt: now,
     updatedAt: now,
   });

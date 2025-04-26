@@ -2,20 +2,14 @@ import { Brand } from "../../../shared/kernel/brand";
 import { Result, ok, err } from "../../../shared/kernel/result";
 import { ValidationErr } from "../../../shared/kernel/types";
 
-export type PromptCategory = Brand<string, "PromptCategory">;
+export type PromptCategory = Brand<"writing" | "development" | "learning" | "daily", "PromptCategory">;
 
-interface CreatePromptCategoryArgs {
-  raw: string;
-}
+export const createPromptCategory = ({ raw }: { raw: string }): Result<PromptCategory, ValidationErr> => {
+  const trimmedRaw = raw.trim().toLowerCase();
 
-const CATEGORY_REGEX = /^[a-z0-9_-]+$/;
-
-export const createPromptCategory = ({ raw }: CreatePromptCategoryArgs): Result<PromptCategory, ValidationErr> => {
-  const trimmed = raw.trim().toLowerCase();
-
-  if (!CATEGORY_REGEX.test(trimmed)) {
-    return err({ kind: "InvalidCategoryFormat", raw: trimmed });
+  if (trimmedRaw === "writing" || trimmedRaw === "development" || trimmedRaw === "learning" || trimmedRaw === "daily") {
+    return ok(trimmedRaw as PromptCategory);
   }
 
-  return ok(trimmed as PromptCategory);
+  return err({ kind: "InvalidCategoryName", raw });
 };
