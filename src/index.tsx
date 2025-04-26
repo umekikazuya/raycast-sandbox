@@ -1,7 +1,7 @@
 import { List, ActionPanel, Action, Icon, showToast, Toast, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { Prompt } from "./domain/entities/prompt";
-import { LocalStoragePromptRepository } from "./infrastructure/repositories/local-storage-prompt-repository";
+import { LocalStoragePromptRepository } from "./infrastructure/repositories/localStoragePromptRepository";
 import { PromptListItem } from "./components/prompt-list-item";
 import { PromptFilter } from "./domain/repositories/promptRepository";
 import { PromptDetail } from "./components/prompt-detail";
@@ -35,33 +35,33 @@ export default function Command() {
   // 検索処理
   async function fetchPrompts() {
     setIsLoading(true);
-    
+
     try {
       // サンプルデータの初期化（初回のみ）
       await promptService.initializeSampleData();
-      
+
       // 検索テキストをキーワードに設定
       const currentFilter: PromptFilter = {
         ...filter,
-        keywords: searchText || undefined
+        keywords: searchText || undefined,
       };
 
       const result = await promptService.searchPrompts(currentFilter);
-      
+
       if (result.ok) {
         setPrompts(result.value);
       } else {
         showToast({
           style: Toast.Style.Failure,
           title: "検索エラー",
-          message: result.error
+          message: result.error,
         });
       }
     } catch (error) {
       showToast({
         style: Toast.Style.Failure,
         title: "エラーが発生しました",
-        message: String(error)
+        message: String(error),
       });
     } finally {
       setIsLoading(false);
@@ -83,38 +83,33 @@ export default function Command() {
   async function handleExecutePrompt(promptId: string, variables: VariableValues = {}) {
     try {
       const result = await promptService.executePrompt(promptId as any, variables);
-      
+
       if (result.ok) {
         showToast({
           style: Toast.Style.Success,
           title: "プロンプトを実行しました",
         });
-        
+
         // クリップボードにコピーするなどの追加機能も実装可能
       } else {
         showToast({
           style: Toast.Style.Failure,
           title: "実行エラー",
-          message: result.error
+          message: result.error,
         });
       }
     } catch (error) {
       showToast({
         style: Toast.Style.Failure,
         title: "エラーが発生しました",
-        message: String(error)
+        message: String(error),
       });
     }
   }
 
   // 新規プロンプト作成画面へ遷移
   function handleCreatePrompt() {
-    push(
-      <PromptForm
-        initialValues={undefined}
-        mode="create"
-      />
-    );
+    push(<PromptForm initialValues={undefined} mode="create" />);
   }
 
   return (
@@ -137,14 +132,10 @@ export default function Command() {
     >
       <List.Section title="プロンプト一覧" subtitle={`${prompts.length}件`}>
         {prompts.map((prompt) => (
-          <PromptListItem 
-            key={prompt.id} 
-            prompt={prompt} 
-            onExecute={handleExecutePrompt} 
-          />
+          <PromptListItem key={prompt.id} prompt={prompt} onExecute={handleExecutePrompt} />
         ))}
       </List.Section>
-      
+
       {prompts.length === 0 && !isLoading && (
         <List.EmptyView
           title="No Prompts Found"
@@ -152,11 +143,7 @@ export default function Command() {
           icon={Icon.Text}
           actions={
             <ActionPanel>
-              <Action
-                title="Create New Prompt"
-                icon={Icon.Plus}
-                onAction={handleCreatePrompt}
-              />
+              <Action title="Create New Prompt" icon={Icon.Plus} onAction={handleCreatePrompt} />
             </ActionPanel>
           }
         />

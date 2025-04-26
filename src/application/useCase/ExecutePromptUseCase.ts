@@ -20,7 +20,7 @@ export type ExecutePromptErr = ApplicationErr | PromptRepositoryErr | ClipboardS
 /**
  * プロンプト実行ユースケース
  *
- * プロンプトの変数を置換し、結果をクリップボードにコピーします
+ * プロンプトの変数を置換し、結果をクリップボードにコピー
  */
 export const executePromptUseCase =
   ({
@@ -49,27 +49,10 @@ export const executePromptUseCase =
       });
     }
 
-    // 変数が入力されてない場合は実行しない
-    if (promptResult.val.variables && promptResult.val.variables.length > 0) {
-      for (const variable of promptResult.val.variables) {
-        const key = variable.key.toString();
-        // If variable is required but not provided or empty
-        if (variable.required && (!params.variables[key] || params.variables[key].trim() === "")) {
-          return err({
-            kind: "ValidationError",
-            message: "変数が入力されていません",
-          });
-        }
-      }
-    }
-    // プロンプトの変数を置換
-    const finalContent = applyVariablesToPrompt({
-      prompt: promptResult.val,
-      variables: params.variables,
-    });
-
     // クリップボードにコピー
-    const clipboardResult = await clipboardService.copyToClipboard({ text: finalContent });
+    const clipboardResult = await clipboardService.copyToClipboard(
+      { text: promptResult.val.body }
+    );
 
     if (clipboardResult.tag === "err") {
       return err({
@@ -81,34 +64,7 @@ export const executePromptUseCase =
 
     // 出力結果を返す
     return ok({
-      content: finalContent,
+      content: promptResult.val.body,
       executedAt: new Date(),
     });
   };
-
-/**
- * プロンプト内の変数を置換する関数
- */
-const applyVariablesToPrompt = ({
-  prompt,
-  variables,
-}: {
-  readonly prompt: Prompt;
-  readonly variables: Record<string, string>;
-}): string => {
-  let content = prompt.body.toString();
-
-  // プロンプト内の変数プレースホルダーを実際の値で置換
-  if (!prompt.variables) {
-    return content;
-  }
-  for (const variable of prompt.variables) {
-    const key = variable.key.toString();
-    if (variables[key]) {
-      const placeholder = `{{${key}}}`;
-      content = content.replace(new RegExp(placeholder, "g"), variables[key]);
-    }
-  }
-
-  return content;
-};

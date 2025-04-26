@@ -1,5 +1,4 @@
 import { v4 as uuid } from "uuid";
-import { CategoryId } from "../../domain/entities/category";
 import { createPrompt, Prompt } from "../../domain/entities/prompt";
 import { PromptRepository, PromptRepositoryErr } from "../../domain/repositories/promptRepository";
 import { PromptType } from "../../shared/kernel/PromptType";
@@ -9,10 +8,8 @@ import { ApplicationErr } from "../../shared/kernel/types";
 export type CreatePromptParams = Readonly<{
   keyword: string;
   body: string;
-  categoryId?: CategoryId;
-  variables: unknown[] | null;
+  category: string;
   type: PromptType;
-  author: string;
 }>;
 
 export type CreatePromptErr = ApplicationErr | PromptRepositoryErr;
@@ -27,8 +24,7 @@ export const createPromptUseCase =
       id: uuid(),
       keyword: params.keyword,
       body: params.body,
-      categoryId: params.categoryId ?? "",
-      variables: params.variables,
+      category: params.category,
       type: params.type,
     });
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Form, ActionPanel, Action, showToast, Toast, useNavigation } from "@raycast/api";
 import { Prompt } from "../domain/entities/prompt";
 import { PromptVariable, createPromptVariable } from "../domain/valueObjects/prompt/PromptVariable";
-import { LocalStoragePromptRepository } from "../infrastructure/repositories/local-storage-prompt-repository";
+import { LocalStoragePromptRepository } from "../infrastructure/repositories/localStoragePromptRepository";
 import { createPromptUseCase, CreatePromptParams } from "../application/useCase/CreatePromptUseCase";
 import { updatePromptUseCase } from "../application/useCase/UpdatePromptUseCase";
 import { UpdatePromptParams } from "../domain/repositories/promptRepository";

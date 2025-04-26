@@ -4,7 +4,7 @@ import { Prompt } from "../domain/entities/prompt";
 import { PromptError } from "../shared/kernel/types";
 import { PromptVariableForm } from "./prompt-variable-form";
 import { ExecutePromptResult, VariableValues, executePromptUseCase } from "../application/useCase/ExecutePromptUseCase";
-import { LocalStoragePromptRepository } from "../infrastructure/repositories/local-storage-prompt-repository";
+import { LocalStoragePromptRepository } from "../infrastructure/repositories/localStoragePromptRepository";
 import { getPromptByIdUseCase } from "../application/useCase/GetPromptByIdUseCase";
 
 type PromptDetailProps = {
