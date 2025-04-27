@@ -3,13 +3,14 @@ import { Prompt } from "../domain/entities/prompt";
 
 type PromptListItemProps = {
   prompt: Prompt;
-  onExecuteEdit: (promptId: string) => void;
+  onExecuteEdit: (prompt: Prompt) => void;
+  onExecuteDelete: (prompt: Prompt) => void;
 };
 
 /**
  * ListItem Component
  */
-export function PromptListItem({ prompt, onExecuteEdit }: PromptListItemProps) {
+export function PromptListItem({ prompt, onExecuteEdit, onExecuteDelete }: PromptListItemProps) {
 
   return (
     <List.Item
@@ -28,7 +29,13 @@ export function PromptListItem({ prompt, onExecuteEdit }: PromptListItemProps) {
             title="Edit Prompt"
             icon={Icon.Pencil}
             shortcut={{ modifiers: ["cmd"], key: "e" }}
-            onAction={() => onExecuteEdit(prompt.id)}
+            onAction={() => onExecuteEdit(prompt)}
+          />
+          <Action
+            title="Delete Prompt"
+            icon={Icon.Pencil}
+            shortcut={{ modifiers: ["cmd"], key: "d" }}
+            onAction={() => onExecuteDelete(prompt)}
           />
         </ActionPanel>
       }

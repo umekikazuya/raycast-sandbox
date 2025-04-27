@@ -24,15 +24,6 @@ export type PromptFilter = {
 };
 
 /**
- * プロンプト更新パラメータ
- */
-export type UpdatePromptParams = Readonly<{
-  keyword?: string;
-  body?: string;
-  category?: string;
-}>;
-
-/**
  * Interface for PromptRepository
  * This interface defines the methods for managing prompts in the repository.
  *

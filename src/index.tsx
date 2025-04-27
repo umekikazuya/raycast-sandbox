@@ -6,6 +6,7 @@ import { PromptListItem } from "./components/promptListItem";
 import { PromptFilter } from "./domain/repositories/promptRepository";
 import { PromptForm } from "./components/promptForm";
 import { filterPromptsUseCase } from "./application/useCase/FilterPromptsUseCase";
+import { deletePromptUseCase } from "./application/useCase/DeletePromptUseCase";
 
 /**
  * プロンプト検索コマンド
@@ -34,8 +35,8 @@ export default function Command() {
   // 検索処理
   async function fetchPrompts() {
     setIsLoading(true);
-    
-    const filterUseCase = filterPromptsUseCase({promptRepository: repository});
+
+    const filterUseCase = filterPromptsUseCase({ promptRepository: repository });
 
     try {
       // 検索テキストをキーワードに設定
@@ -44,8 +45,8 @@ export default function Command() {
         keywords: searchText || undefined,
       };
 
-      const result = await filterUseCase({filter: currentFilter});
-    
+      const result = await filterUseCase({ filter: currentFilter });
+
       if (result.tag === "ok") {
         if (result.val) {
           setPrompts(result.val);
@@ -74,42 +75,35 @@ export default function Command() {
     fetchPrompts();
   }
 
-  // プロンプト実行
-  async function handleExecutePrompt(promptId: string) {
-    // const filterUseCase = filterPromptsUseCase({promptRepository: repository});
-    try {
-      const result = await promptService.executePrompt(promptId as any, variables);
-
-      if (result.ok) {
-        showToast({
-          style: Toast.Style.Success,
-          title: "プロンプトを実行しました",
-        });
-
-        // クリップボードにコピーするなどの追加機能も実装可能
-      } else {
-        showToast({
-          style: Toast.Style.Failure,
-          title: "実行エラー",
-          message: result.error,
-        });
-      }
-    } catch (error) {
-      showToast({
-        style: Toast.Style.Failure,
-        title: "エラーが発生しました",
-        message: String(error),
-      });
-    }
-  }
-
   // 新規プロンプト作成画面へ遷移
   function handleCreatePrompt() {
-    push(<PromptForm initialValues={undefined} mode="create" />);
+    push(<PromptForm initialValues={null} mode="create" />);
   }
-  
+
+  // プロンプト編集画面へ遷移
   function handleExecuteEditPrompt(prompt: Prompt) {
     push(<PromptForm initialValues={prompt} mode="edit" />);
+  }
+
+  // プロンプト削除
+  async function handleDeletePrompt(prompt: Prompt) {
+    const deleteUseCase = deletePromptUseCase({ promptRepository: repository });
+
+    const result = await deleteUseCase({ id: prompt.id });
+
+    if (result.tag === "ok") {
+      showToast({
+        style: Toast.Style.Success,
+        title: "プロンプトが削除されました",
+      });
+      fetchPrompts();
+    } else {
+      showToast({
+        style: Toast.Style.Failure,
+        title: "削除エラー",
+        message: result.err.kind,
+      });
+    }
   }
 
   return (
@@ -132,11 +126,7 @@ export default function Command() {
     >
       <List.Section title="プロンプト一覧" subtitle={`${prompts.length}件`}>
         {prompts.map((prompt) => (
-          <PromptListItem
-            key={prompt.id}
-            prompt={prompt}
-            onExecuteEdit={() => handleExecuteEditPrompt(prompt)}
-          />
+          <PromptListItem key={prompt.id} prompt={prompt} onExecuteEdit={() => handleExecuteEditPrompt(prompt)} onExecuteDelete={() => handleDeletePrompt(prompt)} />
         ))}
       </List.Section>
 
