@@ -1,8 +1,4 @@
-import {
-  PromptRepository,
-  PromptRepositoryErr,
-  PromptFilter,
-} from "../../domain/repositories/promptRepository";
+import { PromptRepository, PromptRepositoryErr, PromptFilter } from "../../domain/repositories/promptRepository";
 import { Prompt } from "../../domain/entities/prompt";
 import { PromptId } from "../../domain/valueObjects/prompt/PromptId";
 import { Result, ok, err } from "../../shared/kernel/result";
@@ -68,11 +64,7 @@ export class LocalStoragePromptRepository implements PromptRepository {
     }
   }
 
-  async update({
-    prompt
-  }: {
-    readonly prompt: Prompt;
-  }): Promise<Result<Prompt, PromptRepositoryErr>> {
+  async update({ prompt }: { readonly prompt: Prompt }): Promise<Result<Prompt, PromptRepositoryErr>> {
     const all = await this.findAll();
     if (all.tag === "err") return all;
     const idx = all.val.findIndex((p) => p.id === prompt.id);

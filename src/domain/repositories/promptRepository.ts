@@ -24,15 +24,6 @@ export type PromptFilter = {
 };
 
 /**
- * プロンプト更新パラメータ
- */
-export type UpdatePromptParams = Readonly<{
-  keyword?: string;
-  body?: string;
-  category?: string;
-}>;
-
-/**
  * Interface for PromptRepository
  * This interface defines the methods for managing prompts in the repository.
  *
@@ -71,11 +62,7 @@ export interface PromptRepository {
    * IDによるプロンプトの更新
    * 部分的な更新をサポート
    */
-  update({
-    prompt,
-  }: {
-    readonly prompt: Prompt;
-  }): Promise<Result<Prompt, PromptRepositoryErr>>;
+  update({ prompt }: { readonly prompt: Prompt }): Promise<Result<Prompt, PromptRepositoryErr>>;
 
   /**
    * IDによるプロンプトの削除
