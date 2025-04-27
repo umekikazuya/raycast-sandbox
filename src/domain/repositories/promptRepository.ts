@@ -62,11 +62,7 @@ export interface PromptRepository {
    * IDによるプロンプトの更新
    * 部分的な更新をサポート
    */
-  update({
-    prompt,
-  }: {
-    readonly prompt: Prompt;
-  }): Promise<Result<Prompt, PromptRepositoryErr>>;
+  update({ prompt }: { readonly prompt: Prompt }): Promise<Result<Prompt, PromptRepositoryErr>>;
 
   /**
    * IDによるプロンプトの削除

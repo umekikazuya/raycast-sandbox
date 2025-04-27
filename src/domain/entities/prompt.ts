@@ -45,7 +45,7 @@ export const createPrompt = ({
   if (bodyResult.tag === "err") {
     return bodyResult;
   }
-  
+
   const categoryResult = createPromptCategory({ raw: category });
   if (categoryResult.tag === "err") {
     return categoryResult;

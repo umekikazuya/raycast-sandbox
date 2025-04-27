@@ -10,7 +10,7 @@ import { deletePromptUseCase } from "./application/useCase/DeletePromptUseCase";
 
 /**
  * プロンプト検索コマンド
- * アプリケーションサービスを利用して、UIと業務ロジックを分離f
+ * アプリケーションサービスを利用して、UIと業務ロジックを分離
  */
 export default function Command() {
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +49,7 @@ export default function Command() {
 
       if (result.tag === "ok") {
         if (result.val) {
-          setPrompts(result.val);
+          setPrompts(Array.from(result.val));
         }
       } else {
         showToast({
@@ -126,7 +126,12 @@ export default function Command() {
     >
       <List.Section title="プロンプト一覧" subtitle={`${prompts.length}件`}>
         {prompts.map((prompt) => (
-          <PromptListItem key={prompt.id} prompt={prompt} onExecuteEdit={() => handleExecuteEditPrompt(prompt)} onExecuteDelete={() => handleDeletePrompt(prompt)} />
+          <PromptListItem
+            key={prompt.id}
+            prompt={prompt}
+            onExecuteEdit={() => handleExecuteEditPrompt(prompt)}
+            onExecuteDelete={() => handleDeletePrompt(prompt)}
+          />
         ))}
       </List.Section>
 
