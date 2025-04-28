@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Form, ActionPanel, Action, showToast, Toast, useNavigation } from "@raycast/api";
 import { LocalStoragePromptRepository } from "../infrastructure/repositories/localStoragePromptRepository";
 import { createPromptUseCase, CreatePromptParams } from "../application/useCase/CreatePromptUseCase";
-import { updatePromptUseCase } from "../application/useCase/UpdatePromptUseCase";
-import { UpdatePromptParams } from "../domain/repositories/promptRepository";
+import { UpdatePromptParams, updatePromptUseCase } from "../application/useCase/UpdatePromptUseCase";
 import { Prompt } from "../domain/entities/prompt";
 import { createPromptCategory } from "../domain/valueObjects/prompt/PromptCategory";
 
@@ -54,61 +53,54 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
       return;
     }
 
-    try {
-      if (mode === "create") {
-        // 新規作成
-        const params: CreatePromptParams = {
-          keyword,
-          body,
-          category: categoryResult.val,
-          type: "local",
-        };
+    if (mode === "create") {
+      // 新規作成
+      const params: CreatePromptParams = {
+        keyword,
+        body,
+        category: categoryResult.val,
+        type: "local",
+      };
 
-        const result = await createPrompt({ params });
+      const result = await createPrompt({ params });
 
-        if (result.tag === "ok") {
-          showToast({
-            style: Toast.Style.Success,
-            title: "プロンプトを作成しました",
-          });
-          pop();
-        } else {
-          showToast({
-            style: Toast.Style.Failure,
-            title: "作成に失敗しました",
-            message: result.err.message || String(result.err),
-          });
-        }
-      } else if (mode === "edit" && initialValues?.id) {
-        // 編集
-        const params: UpdatePromptParams = {
-          keyword,
-          body,
-          category: categoryResult.val,
-        };
-
-        const result = await updatePrompt({ id: initialValues.id, params });
-
-        if (result.tag === "ok") {
-          showToast({
-            style: Toast.Style.Success,
-            title: "プロンプトを更新しました",
-          });
-          pop();
-        } else {
-          showToast({
-            style: Toast.Style.Failure,
-            title: "更新に失敗しました",
-            message: result.err.message || String(result.err),
-          });
-        }
+      if (result.tag === "ok") {
+        showToast({
+          style: Toast.Style.Success,
+          title: "プロンプトを作成しました",
+        });
+        pop();
+      } else {
+        showToast({
+          style: Toast.Style.Failure,
+          title: "作成に失敗しました",
+          message: result.err.kind || String(result.err),
+        });
       }
-    } catch (error) {
-      showToast({
-        style: Toast.Style.Failure,
-        title: "エラーが発生しました",
-        message: String(error),
-      });
+    } else if (mode === "edit" && initialValues?.id) {
+      // 編集
+      const params: UpdatePromptParams = {
+        id: initialValues.id,
+        keyword,
+        body,
+        category: categoryResult.val,
+        type: "local",
+      };
+      const result = await updatePrompt({ params: params });
+
+      if (result.tag === "ok") {
+        showToast({
+          style: Toast.Style.Success,
+          title: "プロンプトを更新しました",
+        });
+        pop();
+      } else {
+        showToast({
+          style: Toast.Style.Failure,
+          title: "更新に失敗しました",
+          message: result.err.kind || String(result.err),
+        });
+      }
     }
   }
 
