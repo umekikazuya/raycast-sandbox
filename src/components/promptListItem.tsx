@@ -16,6 +16,8 @@ export function PromptListItem({ prompt, onExecuteEdit, onExecuteDelete }: Promp
       id={prompt.id}
       title={prompt.body}
       subtitle={prompt.category}
+      icon={Icon.Document}
+      accessories={[{ text: prompt.keyword }]}
       keywords={[prompt.keyword]}
       actions={
         <ActionPanel>
