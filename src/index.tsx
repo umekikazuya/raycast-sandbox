@@ -1,5 +1,5 @@
 import { List, ActionPanel, Action, Icon, showToast, Toast, useNavigation } from "@raycast/api";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Prompt } from "./domain/entities/prompt";
 import { LocalStoragePromptRepository } from "./infrastructure/repositories/localStoragePromptRepository";
 import { PromptListItem } from "./components/promptListItem";
@@ -7,72 +7,47 @@ import { PromptFilter } from "./domain/repositories/promptRepository";
 import { PromptForm } from "./components/promptForm";
 import { filterPromptsUseCase } from "./application/useCase/FilterPromptsUseCase";
 import { deletePromptUseCase } from "./application/useCase/DeletePromptUseCase";
+import { PromptCategory } from "./domain/valueObjects/prompt/PromptCategory";
 
 /**
  * プロンプト検索コマンド
  * アプリケーションサービスを利用して、UIと業務ロジックを分離
  */
 export default function Command() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [searchText, setSearchText] = useState("");
-  const [filter, setFilter] = useState<PromptFilter>({});
+  const [filter, setFilter] = useState<PromptFilter>({ category: undefined, keyword: undefined });
   const { push } = useNavigation();
 
-  // リポジトリとアプリケーションサービスの初期化
-  const repository = new LocalStoragePromptRepository();
+  const repository = useMemo(() => new LocalStoragePromptRepository(), []);
+  const filterUseCase = useMemo(() => filterPromptsUseCase({ promptRepository: repository }), [repository]);
+  const deleteUseCase = useMemo(() => deletePromptUseCase({ promptRepository: repository }), [repository]);
 
-  // 初期ロード
-  useEffect(() => {
-    fetchPrompts();
-  }, []);
-
-  // フィルタの変更時
+  // 起動時にロード.
   useEffect(() => {
     fetchPrompts();
   }, [filter]);
 
-  // 検索処理
+  // Get prompts.
   async function fetchPrompts() {
     setIsLoading(true);
 
-    const filterUseCase = filterPromptsUseCase({ promptRepository: repository });
+    const result = await filterUseCase({ filter });
 
-    try {
-      // 検索テキストをキーワードに設定
-      const currentFilter: PromptFilter = {
-        ...filter,
-        keywords: searchText || undefined,
-      };
-
-      const result = await filterUseCase({ filter: currentFilter });
-
-      if (result.tag === "ok") {
-        if (result.val) {
-          setPrompts(Array.from(result.val));
-        }
-      } else {
-        showToast({
-          style: Toast.Style.Failure,
-          title: "検索エラー",
-          message: result.err.kind,
-        });
-      }
-    } catch (error) {
-      showToast({
-        style: Toast.Style.Failure,
-        title: "エラーが発生しました",
-        message: String(error),
-      });
-    } finally {
-      setIsLoading(false);
+    if (result.tag === "ok") {
+      setPrompts(result.val);
     }
+    setIsLoading(false);
   }
 
-  // 検索テキスト変更時
-  function handleSearchTextChange(text: string) {
-    setSearchText(text);
-    fetchPrompts();
+  // Change search text.
+  async function handleSearchTextChange(text: string | undefined) {
+    setFilter({ ...filter, keyword: text ?? undefined });
+  }
+
+  // Change search category.
+  async function handleSearchCategoryChange(category: string | undefined) {
+    setFilter({ ...filter, category: (category as PromptCategory) ?? undefined });
   }
 
   // 新規プロンプト作成画面へ遷移
@@ -87,44 +62,63 @@ export default function Command() {
 
   // プロンプト削除
   async function handleDeletePrompt(prompt: Prompt) {
-    const deleteUseCase = deletePromptUseCase({ promptRepository: repository });
-
     const result = await deleteUseCase({ id: prompt.id });
 
-    if (result.tag === "ok") {
-      showToast({
-        style: Toast.Style.Success,
-        title: "プロンプトが削除されました",
-      });
-      fetchPrompts();
-    } else {
+    if (result.tag !== "ok") {
       showToast({
         style: Toast.Style.Failure,
         title: "削除エラー",
         message: result.err.kind,
       });
+      return;
     }
+
+    showToast({
+      style: Toast.Style.Success,
+      title: "プロンプトが削除されました",
+    });
+    await fetchPrompts();
   }
 
   return (
     <List
       isLoading={isLoading}
+      searchText={filter.keyword || ""}
       onSearchTextChange={handleSearchTextChange}
-      searchBarPlaceholder="プロンプトを検索..."
-      filtering={false}
       throttle={true}
-      actions={
-        <ActionPanel>
-          <Action
-            title="Create New Prompt"
-            icon={Icon.Plus}
-            shortcut={{ modifiers: ["cmd"], key: "n" }}
-            onAction={handleCreatePrompt}
-          />
-        </ActionPanel>
+      searchBarPlaceholder="Search for prompts"
+      searchBarAccessory={
+        <>
+          <List.Dropdown
+            tooltip="Filter by category"
+            onChange={(value: string) => {
+              handleSearchCategoryChange(value);
+            }}
+            defaultValue={filter.category || ""}
+          >
+            <List.Dropdown.Section title="Categories">
+              <List.Dropdown.Item title="All" value="" />
+              <List.Dropdown.Item title="Writing" value="writing" />
+              <List.Dropdown.Item title="Development" value="development" />
+              <List.Dropdown.Item title="Learning" value="learning" />
+              <List.Dropdown.Item title="Daily" value="daily" />
+            </List.Dropdown.Section>
+          </List.Dropdown>
+        </>
       }
     >
-      <List.Section title="プロンプト一覧" subtitle={`${prompts.length}件`}>
+      <List.Section title="Actions">
+        <List.Item
+          title="Create New Prompt"
+          icon={Icon.Plus}
+          actions={
+            <ActionPanel>
+              <Action title="Create New Prompt" icon={Icon.Plus} onAction={handleCreatePrompt} />
+            </ActionPanel>
+          }
+        />
+      </List.Section>
+      <List.Section title="Prompts" subtitle={`${prompts.length} prompts found`}>
         {prompts.map((prompt) => (
           <PromptListItem
             key={prompt.id}
@@ -134,19 +128,6 @@ export default function Command() {
           />
         ))}
       </List.Section>
-
-      {prompts.length === 0 && !isLoading && (
-        <List.EmptyView
-          title="No Prompts Found"
-          description="No prompts match your search."
-          icon={Icon.Text}
-          actions={
-            <ActionPanel>
-              <Action title="Create New Prompt" icon={Icon.Plus} onAction={handleCreatePrompt} />
-            </ActionPanel>
-          }
-        />
-      )}
     </List>
   );
 }

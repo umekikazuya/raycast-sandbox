@@ -10,7 +10,7 @@ export type FilterPromptsErr = ApplicationErr | PromptRepositoryErr;
  */
 export const filterPromptsUseCase =
   ({ promptRepository }: { readonly promptRepository: PromptRepository }) =>
-  async ({ filter }: { readonly filter: PromptFilter }): Promise<Result<readonly Prompt[], FilterPromptsErr>> => {
+  async ({ filter }: { readonly filter: PromptFilter }): Promise<Result<Prompt[], FilterPromptsErr>> => {
     const result = await promptRepository.findByFilter({ filter });
 
     if (result.tag === "err") {

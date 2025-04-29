@@ -11,15 +11,11 @@ import { LocalStorage } from "@raycast/api";
 export class LocalStoragePromptRepository implements PromptRepository {
   private static STORAGE_KEY = "prompts";
 
-  async findAll(): Promise<Result<readonly Prompt[], PromptRepositoryErr>> {
-    try {
-      const raw = await LocalStorage.getItem<string>(LocalStoragePromptRepository.STORAGE_KEY);
-      if (!raw) return ok([]);
-      const prompts: Prompt[] = JSON.parse(raw);
-      return ok(prompts);
-    } catch (e) {
-      return err({ kind: "StorageError", message: "Failed to load prompts" });
-    }
+  async findAll(): Promise<Result<Prompt[], PromptRepositoryErr>> {
+    const raw = await LocalStorage.getItem<string>(LocalStoragePromptRepository.STORAGE_KEY);
+    if (!raw) return ok([]);
+    const prompts: Prompt[] = JSON.parse(raw);
+    return ok(prompts);
   }
 
   async findById({ id }: { readonly id: PromptId }): Promise<Result<Prompt | null, PromptRepositoryErr>> {
@@ -33,16 +29,18 @@ export class LocalStoragePromptRepository implements PromptRepository {
     filter,
   }: {
     readonly filter: PromptFilter;
-  }): Promise<Result<readonly Prompt[], PromptRepositoryErr>> {
+  }): Promise<Result<Prompt[], PromptRepositoryErr>> {
     const all = await this.findAll();
-    if (all.tag === "err") return all;
+    if (all.tag !== "ok") return all;
     let filtered = all.val;
-    if (filter.keywords) {
-      filtered = filtered.filter((p) => p.keyword.includes(filter.keywords!) || p.body.includes(filter.keywords!));
+    
+    if (filter.keyword !== undefined && filter.keyword !== "") {
+      filtered = filtered.filter((p) => p.keyword.includes(filter.keyword!) || p.body.includes(filter.keyword!));
     }
     if (filter.category) {
       filtered = filtered.filter((p) => p.category === filter.category);
     }
+
     return ok(filtered);
   }
 

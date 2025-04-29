@@ -18,9 +18,8 @@ export type PromptRepositoryErr =
  * プロンプトの検索フィルタ
  */
 export type PromptFilter = {
-  readonly keywords?: string;
+  readonly keyword?: string;
   readonly category?: PromptCategory;
-  readonly tags?: readonly string[];
 };
 
 /**
@@ -40,7 +39,7 @@ export interface PromptRepository {
   /**
    * すべてのプロンプトを取得
    */
-  findAll(): Promise<Result<readonly Prompt[], PromptRepositoryErr>>;
+  findAll(): Promise<Result<Prompt[], PromptRepositoryErr>>;
 
   /**
    * IDによるプロンプトの取得
@@ -50,7 +49,7 @@ export interface PromptRepository {
   /**
    * 条件によるプロンプトの検索
    */
-  findByFilter({ filter }: { readonly filter: PromptFilter }): Promise<Result<readonly Prompt[], PromptRepositoryErr>>;
+  findByFilter({ filter }: { readonly filter: PromptFilter }): Promise<Result<Prompt[], PromptRepositoryErr>>;
 
   /**
    * プロンプトの保存
