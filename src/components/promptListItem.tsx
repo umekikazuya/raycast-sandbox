@@ -1,5 +1,6 @@
 import { Action, ActionPanel, confirmAlert, Icon, List } from "@raycast/api";
 import { Prompt } from "../domain/entities/prompt";
+import { PROMPT_CATEGORIES } from "../domain/valueObjects/prompt/PromptCategory";
 
 type PromptListItemProps = {
   prompt: Prompt;
@@ -16,7 +17,7 @@ export function PromptListItem({ prompt, onExecuteEdit, onExecuteDelete }: Promp
       id={prompt.id}
       title={prompt.body}
       subtitle={prompt.category}
-      icon={Icon.Document}
+      icon={PROMPT_CATEGORIES[prompt.category]?.icon ?? Icon.Document}
       accessories={[{ text: prompt.keyword }]}
       keywords={[prompt.keyword]}
       actions={

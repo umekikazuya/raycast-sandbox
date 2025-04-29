@@ -4,7 +4,7 @@ import { LocalStoragePromptRepository } from "../infrastructure/repositories/loc
 import { createPromptUseCase, CreatePromptParams } from "../application/useCase/CreatePromptUseCase";
 import { UpdatePromptParams, updatePromptUseCase } from "../application/useCase/UpdatePromptUseCase";
 import { Prompt } from "../domain/entities/prompt";
-import { createPromptCategory } from "../domain/valueObjects/prompt/PromptCategory";
+import { createPromptCategory, PROMPT_CATEGORIES } from "../domain/valueObjects/prompt/PromptCategory";
 
 type PromptFormProps = {
   initialValues: Prompt | null;
@@ -134,9 +134,9 @@ export function PromptForm({ initialValues, mode }: PromptFormProps) {
         placeholder="カテゴリを選択"
         onChange={setCategory}
       >
-        <Form.Dropdown.Item value="writing" title="Writing" icon="📝" />
-        <Form.Dropdown.Item value="development" title="Development" icon="🛠️" />
-        <Form.Dropdown.Item value="learning" title="Learning" icon="🏫" />
+        {Object.entries(PROMPT_CATEGORIES).map(([k, c]) => (
+          <Form.Dropdown.Item key={k} title={c.label} value={c.value} icon={c.icon} />
+        ))}
       </Form.Dropdown>
     </Form>
   );
