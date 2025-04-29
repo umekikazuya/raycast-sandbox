@@ -3,7 +3,7 @@ import { Prompt } from "./domain/entities/prompt";
 import { LocalStoragePromptRepository } from "./infrastructure/repositories/localStoragePromptRepository";
 import { PromptFilter } from "./domain/repositories/promptRepository";
 import { filterPromptsUseCase } from "./application/useCase/FilterPromptsUseCase";
-import { PromptCategory } from "./domain/valueObjects/prompt/PromptCategory";
+import { createPromptCategory } from "./domain/valueObjects/prompt/PromptCategory";
 import { LocalPromptList } from "./ui/command/localPromptList";
 
 /**
@@ -38,8 +38,17 @@ export default function Command() {
   }
 
   // Change search category.
-  function handleSearchCategoryChange(category: string | undefined) {
-    setFilter({ ...filter, category: (category as PromptCategory) ?? undefined });
+  function handleSearchCategoryChange(raw: string | undefined) {
+    if (!raw) {
+      setFilter({ ...filter, category: undefined });
+      return;
+    }
+    const category = createPromptCategory({ raw });
+    if (category.tag === "err") {
+      setFilter({ ...filter, category: undefined });
+      return;
+    }
+    setFilter({ ...filter, category: category.val });
   }
 
   return (
