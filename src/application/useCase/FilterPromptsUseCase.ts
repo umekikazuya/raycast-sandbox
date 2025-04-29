@@ -7,7 +7,7 @@ export type FilterPromptsErr = ApplicationErr | PromptRepositoryErr;
 
 /**
  * Use case for filtering prompts
- * 
+ *
  * @param promptRepository - The prompt repository to use for filtering
  * @returns A promise that resolves to the filtered prompts or an error
  */

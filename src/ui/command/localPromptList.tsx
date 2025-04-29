@@ -44,22 +44,20 @@ export const LocalPromptList: React.FunctionComponent<LocalPromptListProps> = ({
       throttle={true}
       searchBarPlaceholder="Search for prompts"
       searchBarAccessory={
-        <>
-          <List.Dropdown
-            tooltip="Filter by category"
-            onChange={(value: string) => {
-              handleSearchCategoryChange(value);
-            }}
-            defaultValue={filter.category || ""}
-          >
-            <List.Dropdown.Section title="Categories">
-              <List.Dropdown.Item title="All" value="" />
-              {Object.entries(PROMPT_CATEGORIES).map(([k, c]) => (
-                <List.Dropdown.Item key={k} title={c.label} value={c.value} icon={c.icon} />
-              ))}
-            </List.Dropdown.Section>
-          </List.Dropdown>
-        </>
+        <List.Dropdown
+          tooltip="Filter by category"
+          onChange={(value: string) => {
+            handleSearchCategoryChange(value);
+          }}
+          defaultValue={filter.category || ""}
+        >
+          <List.Dropdown.Section title="Categories">
+            <List.Dropdown.Item title="All" value="" />
+            {Object.entries(PROMPT_CATEGORIES).map(([k, c]) => (
+              <List.Dropdown.Item key={k} title={c.label} value={c.value} icon={c.icon} />
+            ))}
+          </List.Dropdown.Section>
+        </List.Dropdown>
       }
     >
       <List.Section title="Actions">

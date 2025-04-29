@@ -25,15 +25,11 @@ export class LocalStoragePromptRepository implements PromptRepository {
     return ok(found ?? null);
   }
 
-  async findByFilter({
-    filter,
-  }: {
-    readonly filter: PromptFilter;
-  }): Promise<Result<Prompt[], PromptRepositoryErr>> {
+  async findByFilter({ filter }: { readonly filter: PromptFilter }): Promise<Result<Prompt[], PromptRepositoryErr>> {
     const all = await this.findAll();
     if (all.tag !== "ok") return all;
     let filtered = all.val;
-    
+
     if (filter.keyword !== undefined && filter.keyword !== "") {
       filtered = filtered.filter((p) => p.keyword.includes(filter.keyword!) || p.body.includes(filter.keyword!));
     }
