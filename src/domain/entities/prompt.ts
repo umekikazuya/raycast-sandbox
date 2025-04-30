@@ -25,11 +25,11 @@ interface CreatePromptArgs {
 }
 
 export const createPrompt = ({
-  id: id,
-  keyword: keyword,
-  body: body,
-  category: category,
-  type: type,
+  id,
+  keyword,
+  body,
+  category,
+  type,
 }: CreatePromptArgs): Result<Prompt, ValidationErr> => {
   const idResult = createPromptId({ raw: id });
   if (idResult.tag === "err") {
