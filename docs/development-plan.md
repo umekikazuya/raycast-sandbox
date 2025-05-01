@@ -1,50 +1,69 @@
-# 開発計画
+# Development Plan
 
-## Step 0: コンセプト設計
+## Step 0: Concept Design
 
-- ユビキタス言語の定義（Prompt / Variable / ExecutionLog etc.）
-- ID設計ポリシーの決定（UUID / CUID）
-- 削除方針（論理削除 or 物理削除）
+- Define ubiquitous language (Prompt / ExecutionLog / PromptEvent / EventStore)
+- Determine ID design policy (UUID / CUID)
+- Establish deletion strategy (logical or physical deletion)
+- Design event sourcing model
 
-## Step 1: ドメインモデリング
+## Step 1: Domain Modeling
 
-- Entity: `Prompt`, `ExecutionLog`
-- ValueObject: `PromptBody`, `PromptTags`
+- Entity: `PromptAggregate`, `PromptReadModel`
+- ValueObject: `PromptBody`, `PromptKeyword`, `PromptCategory`
+- DomainEvent: `PromptCreated`, `PromptKeywordChanged`, `PromptBodyUpdated`
 - DomainService: `PromptFilterService`, `PromptExecutionService`
 
-## Step 2: アプリケーション層の実装
+## Step 2: Application Layer Implementation
 
-- UseCase: `CreatePromptUseCase`, `ExecutePromptUseCase`
-- DTO + Mapper / Assembler の整備
+- UseCase: `CreatePromptUseCase`, `UpdatePromptKeywordUseCase`, `ExecutePromptUseCase`
+- Event processing and state reconstruction logic
+- Error handling strategy
 
-## Step 3: テストファースト
+## Step 3: Test-First Approach
 
-- ユースケース単位の正常系・異常系テスト
-- ValueObject 不変性テスト
+- Tests for domain events and state reconstruction
+- Test cases for normal and error flows in each use case
+- Immutability tests for ValueObjects
 
-## Step 4: インフラストラクチャ層
+## Step 4: Infrastructure Layer
 
-- `PromptRepositoryInterface`
-- `LocalPromptRepository`, `DynamoPromptRepository`
-- DynamoDB SDKのラッパー
+- `EventStore` interface
+- `InMemoryEventStore`, `LocalStorageEventStore` implementations
+- Separation of `PromptRepository` and `PromptReadModelRepository`
 
-## Step 5: プレゼンテーション層
+## Step 5: Presentation Layer (Phase 0)
 
-- Prompt一覧・詳細・フォーム UI
-- 実行時の入力ダイアログ
+- Prompt list, detail, and form UIs
+- Application of Container/Presentation pattern
+- Input dialog for execution time
 
-## Step 6: E2E / 統合テスト
+## Step 6: Testing (Phase 0)
 
-- タグによるフィルタリング → 実行確認  
-- 変数入力 → プロンプト実行 → クリップボードへのコピー確認
+- Unit tests for domain logic
+- Integration tests for event sourcing
+- Snapshot tests for UI components
 
-## Step 7: デプロイ・運用・ドキュメント化
+## Step 7: Full CQRS Implementation (Phase 1)
 
-- DynamoDB テーブルの初期化
-- エラーモニタリング（Sentry等）
-- README / CONTRIBUTING.md 整備
+- Complete separation of commands and queries
+- Read model optimization
+- Performance tuning
 
-## Step 8: 設計テンプレートの改善
+## Step 8: Advanced Event Sourcing (Phase 2)
 
-- UseCase / Repository テンプレートの共通化
-- 設計ガイドラインの明文化
+- Implementation of snapshot strategy
+- Event store persistence
+- Batch processing optimization
+
+## Step 9: Feature Extensions
+
+- Prompt execution history management
+- Visualization of prompt change history
+- Public prompt import functionality
+
+## Step 10: Release Preparation
+
+- Performance testing
+- Final verification of error handling
+- Documentation preparation
