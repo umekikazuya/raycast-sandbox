@@ -11,16 +11,13 @@ export const map = <T, E, U>(r: Result<T, E>, fn: (val: T) => U): Result<U, E> =
 export const flatMap = <T, E, U>(r: Result<T, E>, fn: (val: T) => Result<U, E>): Result<U, E> =>
   isOk(r) ? fn(r.val) : r;
 
-export const chain = 
-  <T, U, E>(f: (t: T) => Result<U, E>) => 
-  (r: Result<T, E>): Result<U, E> => 
-    r.tag === "ok" ? f(r.val) : r as unknown as Result<U, E>;
+export const chain =
+  <T, U, E>(f: (t: T) => Result<U, E>) =>
+  (r: Result<T, E>): Result<U, E> =>
+    r.tag === "ok" ? f(r.val) : (r as unknown as Result<U, E>);
 
 // 複数の関数をチェーンする汎用的なパイプライン関数
-export const pipe = 
-  <T, E>(...fns: Array<(a: T) => Result<T, E>>) => 
-  (a: T): Result<T, E> => 
-    fns.reduce(
-      (acc, fn) => acc.tag === "ok" ? fn(acc.val) : acc, 
-      ok(a) as Result<T, E>
-    );
+export const pipe =
+  <T, E>(...fns: Array<(a: T) => Result<T, E>>) =>
+  (a: T): Result<T, E> =>
+    fns.reduce((acc, fn) => (acc.tag === "ok" ? fn(acc.val) : acc), ok(a) as Result<T, E>);

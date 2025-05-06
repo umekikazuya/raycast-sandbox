@@ -4,14 +4,17 @@ import { ValidationErr } from "../../../shared/kernel/types";
 
 export type PromptBody = Brand<string, "PromptBody">;
 
-interface CreatePromptBodyArgs {
-  raw: string;
-}
+type CreatePromptBodyArgs = string;
 
-export const createPromptBody = ({ raw }: CreatePromptBodyArgs): Result<PromptBody, ValidationErr> => {
+export const makePromptBody = (raw: CreatePromptBodyArgs): Result<PromptBody, ValidationErr> => {
   const trimmed = raw.trim();
   if (trimmed.length === 0 || trimmed.length > 5000) {
     return err({ kind: "InvalidPromptBody", raw });
   }
   return ok(trimmed as PromptBody);
+};
+
+// Unwrap
+export const unwrapPromptBody = (body: PromptBody): string => {
+  return body as string;
 };

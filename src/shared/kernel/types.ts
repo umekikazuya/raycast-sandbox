@@ -4,7 +4,8 @@ export type ValidationErr =
   | { kind: "InvalidCategoryId"; raw: string }
   | { kind: "InvalidCategoryName"; raw: string }
   | { kind: "InvalidPromptId"; raw: string }
-  | { kind: "InvalidPromptKeyword"; raw: string };
+  | { kind: "InvalidPromptKeyword"; raw: string }
+  | { kind: "InvalidPromptLength"; raw: string };
 
 export type ConflictErr = { kind: "DuplicateTitle"; title: string };
 

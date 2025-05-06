@@ -11,7 +11,7 @@ export interface PromptCategoryDef {
   description?: string;
 }
 
-export const PROMPT_CATEGORIES: Record<string, PromptCategoryDef> = {
+export const PROMPT_CATEGORIES = {
   writing: {
     value: "writing",
     label: "Writing",
@@ -38,12 +38,23 @@ export const PROMPT_CATEGORIES: Record<string, PromptCategoryDef> = {
   },
 } as const;
 
-export type PromptCategory = keyof typeof PROMPT_CATEGORIES;
+// valueプロパティの値を型として使用
+export type PromptCategory = (typeof PROMPT_CATEGORIES)[keyof typeof PROMPT_CATEGORIES]["value"];
 
-export const createPromptCategory = ({ raw }: { raw: string }): Result<PromptCategory, ValidationErr> => {
+export const makePromptCategory = (raw: string): Result<PromptCategory, ValidationErr> => {
   const trimmedRaw = raw.trim().toLowerCase();
-  if (trimmedRaw in PROMPT_CATEGORIES) {
-    return ok(trimmedRaw as PromptCategory);
+
+  // 値を検証して型変換
+  for (const key of Object.keys(PROMPT_CATEGORIES)) {
+    if (PROMPT_CATEGORIES[key as keyof typeof PROMPT_CATEGORIES].value === trimmedRaw) {
+      return ok(trimmedRaw as PromptCategory);
+    }
   }
+
   return err({ kind: "InvalidCategoryName", raw });
+};
+
+// Unwrap
+export const unwrapPromptCategory = (category: PromptCategory): string => {
+  return category as string;
 };
