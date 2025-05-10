@@ -1,81 +1,122 @@
-# ドメインモデル定義 – Raycast Prompt Manager
+# Domain Model Definition – Raycast Prompt Manager
 
-本ドキュメントは、Raycast Prompt Manager におけるドメインオブジェクト・ユビキタス言語を整理し、実装前の共通理解を確立することを目的とする。
+This document aims to organize domain objects and ubiquitous language in the Raycast Prompt Manager, establishing common understanding before implementation.
 
-## 1. ユビキタス言語（Ubiquitous Language）
+## 1. Ubiquitous Language
 
-| 用語 | 定義 | 備考 |
-|------|------|------|
-| Prompt | 実行可能なAIへの入力テンプレート。ユーザーが作成・共有する単位。| LocalStorageまたはDynamoDBに保存 |
-| PromptCategory | 複数のPromptをカテゴライズするためのラベル単位。| `タグ`と混同されないよう注意 |
-| PromptVariable | Prompt内に埋め込まれるカスタム変数。実行時に入力される。| `{{name}}` などの形で表現 |
-| LocalPrompt | ローカル環境に保存されるPrompt。| オフライン対応・即時性重視 |
-| OrgPrompt | DynamoDBで組織共有されるPrompt。| 組織フィルタ・権限制御あり |
+| Term | Definition | Notes |
+|------|------------|-------|
+| Prompt | Executable AI input template that users create and share | Stored in LocalStorage or DynamoDB |
+| PromptCategory | Unit for categorizing multiple prompts | |
+| LocalPrompt | Prompt stored in local environment | Offline-ready with immediate access |
+| ApiPrompt | Prompt shared through DynamoDB across an organization | With organization filtering and access control |
+| PromptEvent | Event representing a state change in a Prompt. Forms the foundation of event sourcing | Records operations like creation, updates, deletion |
+| EventStore | Storage for domain events | Initially InMemory, later LocalStorage/DynamoDB |
 
+## 2. Entities & Aggregates
 
-## 2. Entity一覧
-
-### 2.1 `Prompt`
-- `id`: UUID or CUID
-- `keyword`: string
+### 2.1 `PromptAggregate`
+- `id`: PromptId (UUID or CUID)
+- `keyword`: PromptKeyword
 - `body`: PromptBody
-- `tags`: PromptTags
-- `author`: UserMeta
-- `type`: 'local' | 'org'
-- `variables`: PromptVariable[]
+- `category`: PromptCategory
+- `type`: 'local' | 'api'
+- `createdAt`: Date
+- `updatedAt`: Date
 
-<!-- v2以降に実装予定 -->
+### 2.2 `PromptReadModel`
+- Optimized read model for queries
+- Projected from PromptAggregate
+- Used for faster filtering and searching
+
+<!-- To be implemented in v2 -->
 <!--
-### 2.2 `ExecutionLog`
+### 2.3 `ExecutionLog`
 - `id`: UUID
 - `promptId`: string
 - `executedBy`: string (userId)
 - `executedAt`: datetime
-- `input`: Record<string, string>
+- `result`: string
 -->
 
-
-## 3. ValueObject一覧
+## 3. Value Objects
 
 ### 3.1 `PromptBody`
 - value: string
-- 制約: Markdown準拠、5000文字以内
+- constraints: Markdown compliant, 5000 characters max
 
-### 3.2 `PromptTags`
-- value: string[]
-- 制約: 最大10個、重複不可、英数字(小文字)・アンダースコア・ハイフンのみ許容
+### 3.2 `PromptCategory`
+- value: string
+- constraints: 50 characters max, alphanumeric + hyphens + underscores only
 
-### 3.3 `UserMeta`
+### 3.3 `PromptKeyword`
+- value: string
+- constraints: 50 characters max, must be unique
+
+### 3.4 `PromptId`
+- value: string (UUID/CUID)
+- constraints: valid UUID/CUID format
+
+### 3.5 `UserMeta`
 - id: string
 - name: string
 - org: string[]
 
-### 3.4 `PromptVariable`
-- key: string
-- label: string
-- required: boolean
-- placeholder?: string
+## 4. Domain Events
 
+### 4.1 `PromptCreated`
+- `id`: PromptId
+- `keyword`: PromptKeyword
+- `body`: PromptBody
+- `category`: PromptCategory
+- `type`: PromptType
+- `timestamp`: Date
 
-## 4. ドメインサービス候補
+### 4.2 `PromptKeywordChanged`
+- `id`: PromptId
+- `oldKeyword`: PromptKeyword
+- `newKeyword`: PromptKeyword
+- `timestamp`: Date
 
-### 4.1 `PromptFilterService`
-- タグや部署でのフィルタリング機能を提供
+### 4.3 `PromptBodyUpdated`
+- `id`: PromptId
+- `newBody`: PromptBody
+- `timestamp`: Date
 
-### 4.2 `PromptExecutionService`
-- 実行時の変数バインディングとバリデーションを担う
+### 4.4 `PromptCategoryChanged`
+- `id`: PromptId
+- `newCategory`: PromptCategory
+- `timestamp`: Date
 
+## 5. Domain Services
 
-## 5. ドメインルール・制約事項
+### 5.1 `PromptFilterService`
+- Provides filtering functionality by category and keyword
 
-- PromptVariable の `key` は英数字のみ許容（JS変数名として扱う）
-- OrgPrompt の作成時は `UserMeta` が必須
-- タグは重複不可、検索の正確性を担保する
-<!-- ExecutionLog は編集不可、記録専用（v2で導入予定） -->
+### 5.2 `PromptExecutionService`
+- Manages prompt execution and results
 
+### 5.3 `EventStore`
+- Event persistence and retrieval
+- Snapshot management (future)
 
-## 6. ｖ2 以降の拡張予定
+## 6. Domain Rules & Constraints
 
-- Prompt に対する `favorite` フラグ
-- ExecutionLog への評価スコア付与（v2）
-- PromptGroup による階層的なカテゴリ分類
+- `UserMeta` is required when creating an OrgPrompt
+- The `keyword` of a Prompt must be unique
+- `PromptBody` cannot be empty
+- All events are recorded in chronological order and used for state reconstruction
+
+## 7. Future Extensions (v2+)
+
+- `favorite` flag for Prompts
+- Evaluation scores for ExecutionLog
+- Hierarchical categorization through PromptGroup
+- Snapshot generation from event stream
+
+## 8. Deprecated Features (Reference)
+
+The following features were initially planned but are now deprecated:
+
+- **PromptVariable**: Variable substitution in prompts (expressed as `{{name}}` etc.)
+- **PromptTags**: Tagging functionality for prompts

@@ -1,30 +1,29 @@
-# Coding Practices Meta Prompt – Raycast Prompt Manager  
+# Coding Practices – Raycast Prompt Manager  
 ## _React × TypeScript • FP • DDD • SOLID • Immutable‑First_
 
 ## 0. Scope & Goals
-- **Audience**  Front‑end & full‑stack engineers working on the Raycast Prompt Manager.  
-- **Goal**  Provide an opinionated, copy‑paste‑ready guideline that stands up to GoF, SOLID, DDD, and Immutable critiques while remaining pragmatic for a modern React codebase.
+- **Audience:** Individual developer aiming to level up coding skills through this project
+- **Goal:** Provide a practical learning path to advanced architectural patterns while building a functional product
 
-## 1. Fundamental Principles
+## 1. Core Principles & Learning Path
 
-### 1.1 Functional Programming (FP)
-| Rule | Rationale |
-|------|-----------|
-| **Pure‑Functions‑First** | Deterministic code is easier to test and reason about. |
-| **Immutable Data** | Prevents hidden state mutation across React renders and async tasks. |
-| **Side‑Effect Isolation** | All I/O lives in the _Infrastructure Layer_ and is deferred via Tasks. |
-| **Type Safety** | Branded types + exhaustive unions prevent illegal states. |
+### 1.1 Functional Programming (FP) - Learning Journey
 
-### 1.2 Domain‑Driven Design (DDD)
-- **Value Objects vs. Entities** — VOs are immutable & compared by value; Entities by identity.  
-- **Aggregates** — Enforce invariants via a single root.  
-- **Repositories** — Pure interfaces; no framework types leak in/out.  
-- **Bounded Contexts** — Each `/context/*` folder may depend **inward only**; enforced by Arch tests.
+| Level | Focus | Implementation |
+|-------|-------|----------------|
+| **Beginner** | Pure functions, basic immutability | Use `const`, avoid mutations, separate side effects |
+| **Intermediate** | Composition, Result/Either pattern | Implement `map`, `chain` for Results, introduce pipe pattern |
+| **Advanced** | Advanced composition, monadic approach | Full FP implementation with proper error handling chains |
 
-### 1.3 Test‑Driven Development (TDD)
-- _Red → Green → Refactor_ for every public function / hook.  
-- Pyramidal coverage: **Unit > Integration > E2E**.  
-- **Assert‑First** — Define expected `Result` early; drives design.
+### 1.2 Domain-Driven Design (DDD) - Practical Implementation
+- **Start Simple**: Begin with basic Value Objects and Entities
+- **Evolve Gradually**: Introduce event sourcing for one aggregate first
+- **Learn by Doing**: Implement one pattern fully before moving to the next
+
+### 1.3 Test-Driven Development (TDD) - Growth Strategy
+- Start with simple unit tests for pure functions
+- Gradually introduce property-based testing
+- Aim for test coverage that gives confidence, not just metrics
 
 ## 2. Core Type Toolkit
 
@@ -32,8 +31,8 @@
 // Brand helper
 type Brand<T, B> = T & { readonly _brand: B };
 // Samples
-type Money = Brand<number, "Money">;
-type Email = Brand<string, "Email">;
+type PromptId = Brand<string, "PromptId">;
+type PromptKeyword = Brand<string, "PromptKeyword">;
 
 // Result + helpers (Either monad–light)
 export type Result<T, E> = { tag: "ok"; val: T } | { tag: "err"; err: E };
@@ -45,131 +44,201 @@ export const chain = <T,U,E>(f:(t:T)=>Result<U,E>)=>(r:Result<T,E>):Result<U,E> 
   r.tag==="ok" ? f(r.val) : r;
 ```
 
-## 3. Immutable‑First Doctrine
+## 3. Practical Implementation Strategy
 
-| Guideline | Enforcement |
-|-----------|-------------|
-| No Runtime Mutation | ts-immutable-readonly plugin + Object.freeze in dev builds. |
-| Structural Sharing | Only spread/object rest; never .push, .splice. |
-| Entity Updates | Return a new object via builder or event reducer; never mutate in place. |
-| Third‑Party Guards | Wrap UI libs that mutate props; clone inputs before usage. |
+| Phase | Focus | Goal |
+|-------|-------|------|
+| **Foundation** | Basic typed entities, value objects | Get working MVP with type safety |
+| **Refinement** | Proper domain events, CQRS basics | Improve domain logic integrity |
+| **Mastery** | Full event sourcing, FP patterns | Complete architectural vision |
 
+## 4. Domain Layer - Evolutionary Approach
 
-## 4. Domain Layer
-
-### 4.1 Value Objects (RORO)
+### 4.1 Value Objects - Start Simple and Evolve
 ```ts
-export const createEmail = ({ raw }: { raw: string }): Result<Email, ValidationErr> =>
-  raw.match(/.+@.+\..+/) ? ok(raw as Email) : err({ kind: "InvalidEmail", raw });
+// Phase 1: Basic validation
+export const createPromptKeyword = (raw: string): Result<PromptKeyword, ValidationErr> => {
+  if (!raw.trim()) return err({ kind: "EmptyKeyword" });
+  return ok(raw as PromptKeyword);
+};
+
+// Phase 2: More robust implementation with RORO
+export const createPromptKeyword = ({ raw }: { raw: string }): Result<PromptKeyword, ValidationErr> => {
+  if (!raw || raw.trim().length === 0) {
+    return err({ kind: "EmptyKeyword" });
+  }
+  
+  if (raw.length > 100) {
+    return err({ kind: "KeywordTooLong", max: 100, actual: raw.length });
+  }
+  
+  return ok(raw as PromptKeyword);
+};
 ```
 
-### 4.2 Event‑Sourced Aggregate (excerpt)
+### 4.2 Event Sourcing - Progressive Implementation
 ```ts
+// Phase 1: Simple aggregate with basic methods
+interface Prompt {
+  id: PromptId;
+  keyword: PromptKeyword;
+  // ...other fields
+  
+  updateKeyword(newKeyword: string): Result<Prompt, ValidationErr>;
+}
+
+// Phase 2: Event-sourced aggregate
 type PromptEvent =
-  | { type: "Created"; id: PromptId; title: string }
-  | { type: "TitleChanged"; id: PromptId; title: string };
+  | { type: "PromptCreated"; id: PromptId; keyword: PromptKeyword; /* ... */ }
+  | { type: "KeywordChanged"; id: PromptId; oldKeyword: PromptKeyword; newKeyword: PromptKeyword };
 
-const evolve = (s: Prompt | undefined, e: PromptEvent): Prompt =>
-  e.type === "Created"
-    ? { id: e.id, title: e.title, history: [] }
-    : { ...s!, title: e.title, history: [...s!.history, e] };
-
-export const replay = (events: PromptEvent[]) => events.reduce(evolve, undefined!);
+// Reconstruction function - Phase 2
+export const replayPrompt = (events: PromptEvent[]): Prompt | null => {
+  // Implementation details
+};
 ```
 
-## 5. Application Services (Use‑Cases)
+## 5. Application Layer - Build Up Complexity
+
 ```ts
-export const executePrompt = ({
-  aggregateRepo,
-  executor,
+// Phase 1: Simple use case
+export const updatePromptKeyword = async (
+  id: PromptId,
+  newKeyword: string,
+  repository: PromptRepository
+): Promise<Result<Prompt, AppError>> => {
+  // Simple implementation
+};
+
+// Phase 2: More FP-style approach with RORO
+export const updatePromptKeywordUseCase = ({
+  promptRepository
 }: {
-  aggregateRepo: PromptRepository;          // DIP
-  executor: PromptStrategy;
+  promptRepository: PromptRepository;
 }) => async ({
   id,
-  input,
+  newKeyword
 }: {
   id: PromptId;
-  input: string;
-}): Task<Result<PromptOutput, DomainErr>> =>
-  pipe(
-    await aggregateRepo.findById({ id }),
-    chain(executor.run(input)),
-    map(output => ({ ...output, executedAt: new Date() }))
-  );
+  newKeyword: string;
+}): Promise<Result<Prompt, AppErr>> => {
+  // More advanced implementation
+};
+
+// Phase 3: Full event-sourcing + FP implementation
+export const updatePromptKeywordUseCase = ({
+  eventStore
+}: {
+  eventStore: EventStore;
+}) => async ({
+  id,
+  newKeyword
+}: {
+  id: PromptId;
+  newKeyword: string;
+}): Promise<Result<Prompt, AppErr>> => {
+  // Event sourcing implementation with pipe, map, chain
+};
 ```
 
-- Receives an Object, Returns a Task`<Result<…>>` (RORO + async FP).
-- Publishes PromptExecuted event to Outbox on success
+## 6. UI Layer - Evolving Component Design
 
-## 6. Infrastructure & DI
+### 6.1 Container/Presentation Separation - Step by Step
+```tsx
+// Phase 1: Simple component
+export const PromptList: React.FC = () => {
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  // Mixed concerns - data fetching and presentation
+  
+  return (
+    <List>
+      {prompts.map(prompt => (
+        <List.Item key={prompt.id} title={prompt.keyword} />
+      ))}
+    </List>
+  );
+};
 
-| Layer | Contract | Notes |
-|-------|----------|-------|
-| Adapters | PromptRepository, PromptQueryService, HttpClient | Provide in‑memory & DynamoDB impls. |
-| Provider | `<InfraProvider value={{ promptRepo, http }}>` | Inject at React root; tests swap with stubs. |
-| HttpClient | get<T>(url, opts) / post<T> returns Task<Result<T, InfraErr>>. | |
+// Phase 2: Separated concerns
+// Presentational Component
+const PromptListView: React.FC<{
+  prompts: Prompt[];
+  onSelect: (prompt: Prompt) => void;
+  isLoading: boolean;
+}> = ({ prompts, onSelect, isLoading }) => {
+  // Pure presentation logic
+};
 
+// Container Component
+export const PromptListContainer: React.FC = () => {
+  // Data fetching and state management
+};
+```
 
-## 7. React Integration
+## 7. Testing Strategy - Progressive Approach
 
-| Concern | Practice |
-|---------|----------|
-| RSC Split | Mark server‑only modules /** @server */; browser stubs throw. |
-| Suspense + ErrorBoundary | Wrap each Container: `<Suspense fallback={<Loader/>}><PromptContainer/></Suspense>` plus `<PromptErrorBoundary>`. |
-| Hooks | RORO signature; return { state, retry }. |
-| Presentation‑Container | Containers only call Application Services & manage side‑effects; Presentations are pure JSX. |
-
-
-## 8. Error Taxonomy
+| Phase | Focus | Example |
+|-------|-------|---------|
+| 1 | Test critical functions | Value object validations, core business logic |
+| 2 | Test key application flows | Complete use cases with mocked dependencies |
+| 3 | Add comprehensive testing | Property-based tests, more edge cases |
 
 ```ts
-export type ValidationErr =
-  | { kind: "NegativeAmount"; amount: number }
-  | { kind: "InvalidEmail"; raw: string };
+// Phase 1: Basic unit test
+describe('createPromptKeyword', () => {
+  it('rejects empty keywords', () => {
+    const result = createPromptKeyword({ raw: '' });
+    expect(result.tag).toBe('err');
+  });
+});
 
-export type ConflictErr = { kind: "DuplicateTitle"; title: string };
-export type InfraErr    = { kind: "Network"; reason: string };
+// Phase 3: Property-based testing
+import * as fc from 'fast-check';
 
-export type DomainErr = ValidationErr | ConflictErr;
+describe('Prompt aggregate', () => {
+  it('maintains invariants through state changes', () => {
+    fc.assert(
+      fc.property(
+        fc.string().filter(s => s.length > 0 && s.length <= 100),
+        fc.string().filter(s => s.length > 0 && s.length <= 100),
+        (initial, updated) => {
+          const prompt = createPrompt({ keyword: initial, /* other fields */ });
+          const updatedPrompt = prompt.updateKeyword(updated);
+          
+          return updatedPrompt.tag === 'ok' && 
+                 updatedPrompt.val.keyword === updated;
+        }
+      )
+    );
+  });
+});
 ```
 
-Map to: Domain ➜ HTTP ➜ UI message via a central errorMapper
+## 8. Personal Development Goals
 
-## 9. Testing Strategy
+Advancing through these patterns will help you:
 
-| Level | Tooling | Focus |
-|-------|---------|-------|
-| Unit | vitest + fast‑check | Pure functions, aggregates. |
-| Integration | dynamo‑local + msw | Repositories & adapters. |
-| E2E | Playwright | Full browser flow; use stubbed infra for CI. |
-| Arch Tests | ts‑query / ArchUnitTS | Enforce bounded‑context imports. |
-| Mutation Tests | StrykerJS | Ensure branch coverage is meaningful. |
+1. **Technical Growth**: Master advanced patterns in TypeScript and functional programming
+2. **Architecture Skills**: Learn DDD and CQRS practically, not just theoretically
+3. **Testing Expertise**: Develop a strong testing discipline
+4. **Code Quality**: Write more maintainable, robust code
 
+## 9. Progress Tracking
 
-## 10. CI / Quality Gates
-1. ESLint & Prettier with Immutable and Functional rule sets.
-2. Type‑coverage ≥ 98% (typescript --noUncheckedIndexedAccess).
-3. Arch Tests fail build on cross‑context import.
-4. Mutation Testing score ≥ 70% lines survived.
-5. Deep‑Freeze Guard in test env to catch accidental mutations.
+Track your improvement with these milestones:
 
-## 11. Operational & Release Strategy
+- [ ] Implement all value objects with proper validation
+- [ ] Convert one aggregate to use immutable update patterns
+- [ ] Add event sourcing to one aggregate root
+- [ ] Implement CQRS pattern for read/write separation
+- [ ] Write comprehensive tests for domain layer
+- [ ] Refactor UI layer to use container/presentation pattern
 
-| Stage | Action |
-|-------|--------|
-| Alpha | Internal devs only; in‑memory repo. |
-| Beta | Select org tenants; DynamoDB backend; feature flags. |
-| GA | Global rollout; blue‑green deploy; canary metrics. |
-| Maintenance | Weekly dependency updates; monthly audit + perf budget check. |
+## 10. Definition of Done
 
+For each learning component:
 
-## 12. Definition of Done ✅
-- All public APIs follow RORO and return Result/Task<Result>.
-- ESLint passes with no @ts‑expect‑error in domain layer.
-- At least one event‑sourced aggregate in production code.
-- Error mapping table present & wired to <PromptErrorBoundary>.
-- CI pipeline enforces all quality gates.
-
-Ready for cynical review:
-Every section above explicitly counters common criticisms from GoF, SOLID, DDD, and Immutable viewpoints while remaining implementable in a real‑world React × TypeScript repo.
+- The code works and solves the business problem
+- You understand why the pattern is beneficial
+- You can explain the concept clearly
+- Tests validate the implementation

@@ -4,14 +4,17 @@ import { ValidationErr } from "../../../shared/kernel/types";
 
 export type PromptKeyword = Brand<string, "PromptKeyword">;
 
-interface CreatePromptKeywordArgs {
-  raw: string;
-}
+type CreatePromptKeywordArgs = string;
 
-export const createPromptKeyword = ({ raw }: CreatePromptKeywordArgs): Result<PromptKeyword, ValidationErr> => {
+export const makePromptKeyword = (raw: CreatePromptKeywordArgs): Result<PromptKeyword, ValidationErr> => {
   const trimmed = raw.trim();
-  if (trimmed.length === 0 || trimmed.length > 100) {
+  if (trimmed.length === 0 || trimmed.length > 50) {
     return err({ kind: "InvalidPromptKeyword", raw });
   }
   return ok(trimmed as PromptKeyword);
+};
+
+// Unwrap
+export const unwrapPromptKeyword = (keyword: PromptKeyword): string => {
+  return keyword as string;
 };

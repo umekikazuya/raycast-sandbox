@@ -1,4 +1,4 @@
-import { Prompt } from "../entities/prompt";
+import { PromptAggregate } from "../entities/prompt/PromptAggregate.ts";
 import { PromptId } from "../valueObjects/prompt/PromptId";
 import { Result } from "../../shared/kernel/result";
 import { InfrastructureErr, ValidationErr } from "../../shared/kernel/types";
@@ -39,29 +39,29 @@ export interface PromptRepository {
   /**
    * すべてのプロンプトを取得
    */
-  findAll(): Promise<Result<Prompt[], PromptRepositoryErr>>;
+  findAll(): Promise<Result<PromptAggregate[], PromptRepositoryErr>>;
 
   /**
    * IDによるプロンプトの取得
    */
-  findById({ id }: { readonly id: PromptId }): Promise<Result<Prompt | null, PromptRepositoryErr>>;
+  findById({ id }: { readonly id: PromptId }): Promise<Result<PromptAggregate | null, PromptRepositoryErr>>;
 
   /**
    * 条件によるプロンプトの検索
    */
-  findByFilter({ filter }: { readonly filter: PromptFilter }): Promise<Result<Prompt[], PromptRepositoryErr>>;
+  findByFilter({ filter }: { readonly filter: PromptFilter }): Promise<Result<PromptAggregate[], PromptRepositoryErr>>;
 
   /**
    * プロンプトの保存
    * 新規プロンプトの場合は作成、既存のプロンプトの場合は更新
    */
-  save({ prompt }: { readonly prompt: Prompt }): Promise<Result<Prompt, PromptRepositoryErr>>;
+  save({ prompt }: { readonly prompt: PromptAggregate }): Promise<Result<PromptAggregate, PromptRepositoryErr>>;
 
   /**
    * IDによるプロンプトの更新
    * 部分的な更新をサポート
    */
-  update({ prompt }: { readonly prompt: Prompt }): Promise<Result<Prompt, PromptRepositoryErr>>;
+  update({ prompt }: { readonly prompt: PromptAggregate }): Promise<Result<PromptAggregate, PromptRepositoryErr>>;
 
   /**
    * IDによるプロンプトの削除
