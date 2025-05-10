@@ -8,6 +8,7 @@
 ## 1. Core Principles & Learning Path
 
 ### 1.1 Functional Programming (FP) - Learning Journey
+
 | Level | Focus | Implementation |
 |-------|-------|----------------|
 | **Beginner** | Pure functions, basic immutability | Use `const`, avoid mutations, separate side effects |

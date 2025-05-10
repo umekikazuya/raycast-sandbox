@@ -1,9 +1,9 @@
 import { createPromptAggregate } from "../../../../domain/entities/prompt/PromptAggregate";
 import { makePromptCreated } from "../../../../domain/entities/prompt/events/promptCreated";
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 
 describe("makePromptCreated", () => {
-  it('コンパイルエラー: payloadに余計なキーを含むとエラーになる', () => {
+  it("コンパイルエラー: payloadに余計なキーを含むとエラーになる", () => {
     // @ts-expect-error: payloadにextraKeyは存在しないためエラー
     makePromptCreated({
       aggregateId: "id",
@@ -67,42 +67,42 @@ describe("createPromptAggregate", () => {
   it("fails with InvalidId when id is invalid", () => {
     const result = createPromptAggregate({ ...baseInput, id: "" });
     expect(result.tag).toBe("err");
-    if (result.tag === "err") expect(result.err).toBe("InvalidId");
+    if (result.tag === "err") expect(result.err.kind).toBe("InvalidPromptId");
   });
 
   it("fails with InvalidKeyword when keyword is invalid", () => {
     const result = createPromptAggregate({ ...baseInput, keyword: "" });
     expect(result.tag).toBe("err");
-    if (result.tag === "err") expect(result.err).toBe("InvalidKeyword");
+    if (result.tag === "err") expect(result.err.kind).toBe("InvalidPromptKeyword");
   });
 
   it("fails with InvalidBody when body is invalid", () => {
     const result = createPromptAggregate({ ...baseInput, body: "" });
     expect(result.tag).toBe("err");
-    if (result.tag === "err") expect(result.err).toBe("InvalidBody");
+    if (result.tag === "err") expect(result.err.kind).toBe("InvalidPromptBody");
   });
 
   it("fails with InvalidCategory when category is invalid", () => {
     const result = createPromptAggregate({ ...baseInput, category: "" });
     expect(result.tag).toBe("err");
-    if (result.tag === "err") expect(result.err).toBe("InvalidCategory");
+    if (result.tag === "err") expect(result.err.kind).toBe("InvalidCategoryFormat");
   });
 
   it("returns first error when multiple inputs invalid: id and keyword", () => {
     const result = createPromptAggregate({ ...baseInput, id: "", keyword: "" });
     expect(result.tag).toBe("err");
-    if (result.tag === "err") expect(result.err).toBe("InvalidId");
+    if (result.tag === "err") expect(result.err.kind).toBe("InvalidPromptId");
   });
 
   it("returns next error when first is valid and others invalid: keyword and body", () => {
     const result = createPromptAggregate({ ...baseInput, keyword: "", body: "" });
     expect(result.tag).toBe("err");
-    if (result.tag === "err") expect(result.err).toBe("InvalidKeyword");
+    if (result.tag === "err") expect(result.err.kind).toBe("InvalidPromptKeyword");
   });
 
   it("returns next error when id and keyword valid but body and category invalid", () => {
     const result = createPromptAggregate({ ...baseInput, body: "", category: "" });
     expect(result.tag).toBe("err");
-    if (result.tag === "err") expect(result.err).toBe("InvalidBody");
+    if (result.tag === "err") expect(result.err.kind).toBe("InvalidPromptBody");
   });
 });

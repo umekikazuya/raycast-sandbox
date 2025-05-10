@@ -9,7 +9,7 @@ This document aims to organize domain objects and ubiquitous language in the Ray
 | Prompt | Executable AI input template that users create and share | Stored in LocalStorage or DynamoDB |
 | PromptCategory | Unit for categorizing multiple prompts | |
 | LocalPrompt | Prompt stored in local environment | Offline-ready with immediate access |
-| OrgPrompt | Prompt shared through DynamoDB across an organization | With organization filtering and access control |
+| ApiPrompt | Prompt shared through DynamoDB across an organization | With organization filtering and access control |
 | PromptEvent | Event representing a state change in a Prompt. Forms the foundation of event sourcing | Records operations like creation, updates, deletion |
 | EventStore | Storage for domain events | Initially InMemory, later LocalStorage/DynamoDB |
 
@@ -51,7 +51,7 @@ This document aims to organize domain objects and ubiquitous language in the Ray
 
 ### 3.3 `PromptKeyword`
 - value: string
-- constraints: 100 characters max, must be unique
+- constraints: 50 characters max, must be unique
 
 ### 3.4 `PromptId`
 - value: string (UUID/CUID)
