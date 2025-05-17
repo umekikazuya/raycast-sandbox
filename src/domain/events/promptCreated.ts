@@ -1,13 +1,13 @@
+import { DomainEvent } from "./domainEvent";
+
 export const EVENT_TYPE = "prompt.created" as const;
 
-export type PromptCreated = {
+export interface PromptCreated extends DomainEvent {
   type: typeof EVENT_TYPE;
-  aggregateId: string;
   keyword: string;
   body: string;
   category: string;
-  occurredAt: string;
-};
+}
 
 export const makePromptCreated = (payload: Omit<PromptCreated, "type">): PromptCreated => {
   return {

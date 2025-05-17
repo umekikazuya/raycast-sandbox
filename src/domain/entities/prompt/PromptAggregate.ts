@@ -4,7 +4,8 @@ import { makePromptBody, PromptBody, unwrapPromptBody } from "../../valueObjects
 import { makePromptCategory, PromptCategory, unwrapPromptCategory } from "../../valueObjects/prompt/PromptCategory";
 import { makePromptId, PromptId, unwrapPromptId } from "../../valueObjects/prompt/PromptId";
 import { makePromptKeyword, PromptKeyword, unwrapPromptKeyword } from "../../valueObjects/prompt/PromptKeyword";
-import { makePromptCreated, PromptCreated } from "./events/promptCreated";
+import { makePromptCreated, PromptCreated } from "../../events/promptCreated";
+import { DomainEvent } from "../../events/domainEvent";
 
 export type PromptAggregate = Readonly<{
   id: PromptId;
@@ -54,3 +55,39 @@ export function createPromptAggregate(
   });
   return ok({ aggregate, event });
 }
+
+export const replayPrompt = (events: readonly DomainEvent[]): PromptAggregate | null => {
+  let agg: PromptAggregate | null = null;
+
+  for (const ev of events) {
+    switch (ev.type) {
+      case "prompt.created":
+        agg = applyPromptCreated(ev as PromptCreated);
+        break;
+      // case "prompt.updated":
+      //   if (agg) agg = applyPromptUpdated(agg, ev);
+      //   break;
+      case "prompt.deleted":
+        agg = null;
+        break;
+    }
+  }
+  return agg;
+};
+
+const applyPromptCreated = (ev: PromptCreated): PromptAggregate => ({
+  id: ev.aggregateId as PromptId,
+  keyword: ev.keyword as PromptKeyword,
+  body: ev.body as PromptBody,
+  category: ev.category as PromptCategory,
+  createdAt: new Date(ev.occurredAt),
+  updatedAt: new Date(ev.occurredAt),
+});
+
+// const applyPromptUpdated = (agg: PromptAggregate, ev: PromptUpdated): PromptAggregate => ({
+//   ...agg,
+//   keyword: ev.keyword ?? agg.keyword,
+//   body: ev.body ?? agg.body,
+//   category: ev.category ?? agg.category,
+//   updatedAt: ev.occurredAt
+// });
