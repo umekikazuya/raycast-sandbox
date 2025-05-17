@@ -57,19 +57,19 @@ export function createPromptAggregate(
 }
 
 export const replayPrompt = (events: readonly DomainEvent[]): PromptAggregate | null => {
+  if (!events.length) return null;
   let agg: PromptAggregate | null = null;
-
   for (const ev of events) {
     switch (ev.type) {
       case EVENT_TYPE:
         agg = applyPromptCreated(ev as PromptCreated);
         break;
+      case "prompt.deleted":
+        agg = null;
+        break;
       // @todo Implement other event types when needed
       // case "prompt.updated":
       //   if (agg) agg = applyPromptUpdated(agg, ev);
-      //   break;
-      // case "prompt.deleted":
-      //   agg = null;
       //   break;
       default:
         console.warn(`Unexpected event type: ${ev.type}`);
