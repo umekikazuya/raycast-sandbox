@@ -1,5 +1,5 @@
 import { createPromptAggregate } from "../../../../domain/entities/prompt/PromptAggregate";
-import { makePromptCreated } from "../../../../domain/entities/prompt/events/promptCreated";
+import { makePromptCreated } from "../../../../domain/events/promptCreated";
 import { jest } from "@jest/globals";
 
 describe("makePromptCreated", () => {
