@@ -4,7 +4,8 @@ import { makePromptBody, PromptBody, unwrapPromptBody } from "../../valueObjects
 import { makePromptCategory, PromptCategory, unwrapPromptCategory } from "../../valueObjects/prompt/PromptCategory";
 import { makePromptId, PromptId, unwrapPromptId } from "../../valueObjects/prompt/PromptId";
 import { makePromptKeyword, PromptKeyword, unwrapPromptKeyword } from "../../valueObjects/prompt/PromptKeyword";
-import { makePromptCreated, PromptCreated } from "./events/promptCreated";
+import { EVENT_TYPE, makePromptCreated, PromptCreated } from "../../events/promptCreated";
+import { DomainEvent } from "../../events/domainEvent";
 
 export type PromptAggregate = Readonly<{
   id: PromptId;
@@ -54,3 +55,55 @@ export function createPromptAggregate(
   });
   return ok({ aggregate, event });
 }
+
+export const replayPrompt = (events: readonly DomainEvent[]): PromptAggregate | null => {
+  if (!events.length) return null;
+  let agg: PromptAggregate | null = null;
+  for (const ev of events) {
+    switch (ev.type) {
+      case EVENT_TYPE:
+        agg = applyPromptCreated(ev as PromptCreated);
+        break;
+      case "prompt.deleted":
+        agg = null;
+        break;
+      // @todo Implement other event types when needed
+      // case "prompt.updated":
+      //   if (agg) agg = applyPromptUpdated(agg, ev);
+      //   break;
+      default:
+        console.warn(`Unexpected event type: ${ev.type}`);
+        break;
+    }
+  }
+  return agg;
+};
+
+const applyPromptCreated = (ev: PromptCreated): PromptAggregate => {
+  const idResult = makePromptId(ev.aggregateId);
+  const keywordResult = makePromptKeyword(ev.keyword);
+  const bodyResult = makePromptBody(ev.body);
+  const categoryResult = makePromptCategory(ev.category);
+
+  if (idResult.tag === "err") throw new Error(`Invalid PromptId in event: ${ev.aggregateId}`);
+  if (keywordResult.tag === "err") throw new Error(`Invalid PromptKeyword in event: ${ev.keyword}`);
+  if (bodyResult.tag === "err") throw new Error(`Invalid PromptBody in event: ${ev.body}`);
+  if (categoryResult.tag === "err") throw new Error(`Invalid PromptCategory in event: ${ev.category}`);
+
+  return {
+    id: idResult.val,
+    keyword: keywordResult.val,
+    body: bodyResult.val,
+    category: categoryResult.val,
+    createdAt: new Date(ev.occurredAt),
+    updatedAt: new Date(ev.occurredAt),
+  };
+};
+
+// const applyPromptUpdated = (agg: PromptAggregate, ev: PromptUpdated): PromptAggregate => ({
+//   ...agg,
+//   keyword: ev.keyword ?? agg.keyword,
+//   body: ev.body ?? agg.body,
+//   category: ev.category ?? agg.category,
+//   updatedAt: ev.occurredAt
+// });
